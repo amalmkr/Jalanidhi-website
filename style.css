@@ -1,0 +1,74 @@
+body{
+  background-color: #fafffe;
+  color: #212529;
+}
+
+#main-nav{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    background: transparent !important; 
+    font-family: 'Noto Sans', 'Noto Sans Malayalam', sans-serif;
+    border-bottom: 1px solid rgba(255,255,255,0.4);  
+    backdrop-filter: blur(2px);
+    position: fixed;
+}
+
+
+#main-nav .nav-link{
+    color: rgb(255, 255, 255);
+    font-weight: 900;
+    font-family: 'Noto Sans', 'Noto Sans Malayalam', sans-serif;
+}
+
+#main-nav .nav-link:hover{
+color: rgb(67, 182, 235);
+}
+
+.carousel-item img {
+    height: 600px;   
+    object-fit: cover;
+}
+
+.carousel-caption {
+    font-family: 'Noto Sans Malayalam', 'Manjari', sans-serif !important;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.65); 
+    font-weight: 600;
+}
+
+.carousel-caption p {
+    font-size: 20px !important;
+    line-height: 1.2;
+    backdrop-filter: 4px;
+}
+
+.carousel-caption h2 {
+    font-size: 45px !important;
+    color: #26c0ff !important;
+    font-family: 'Manjari', sans-serif !important;
+}
+.stat-card {
+    background-color: #1a5fa8;
+    color: white;
+    border-radius: 10px;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: #cce4ff;
+}
+
+.stat-number {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+}
