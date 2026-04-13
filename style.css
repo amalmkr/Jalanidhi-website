@@ -99,21 +99,29 @@ color: rgb(67, 182, 235);
 }
 
 .usr-card-a{
-  background: linear-gradient(55deg, #000ceb, #bdbdbd);
+  background: linear-gradient(55deg, #000ceb, #600546);
   padding: 20px;
   border-radius: 12px;
   color: white;
 }
+.usr-card-a:hover{
+    background: #600546;
+    color: #000ceb;
+}
+.usr-card-b:hover{
+    background: #600546;
+    color: #000ceb;
+}
 .usr-card-a h5{
-    color: linear-gradient(55deg, #bdbdbd, #000ceb);
+    color: linear-gradient(55deg, #600546, #000ceb);
 
 }
 .usr-card-b h5{
-    color: linear-gradient(55deg, #000ceb, #bdbdbd);
+    color: linear-gradient(55deg, #000ceb, #600546);
 
 }
 .usr-card-b{
-  background: linear-gradient(55deg, #bdbdbd, #000ceb);
+  background: linear-gradient(55deg,#600546, #000ceb);
   padding: 20px;
   border-radius: 12px;
   color: white;
@@ -121,4 +129,11 @@ color: rgb(67, 182, 235);
 .card-user-caption{
     color: beige;
     font-weight: bold;
+    /* -webkit-text-stroke: 1px black;
+  color: white;
+  */
+} 
+
+.card-user-caption:hover{
+    color: #ff03d1;
 }
