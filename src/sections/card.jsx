@@ -4,8 +4,8 @@ function Card(){
         <>
         <section>
             <div>
-                <h1 className="text-blue-800 text-center mt-10 text-3xl font-extrabold">കേരള ഗ്രാമീണ ശുദ്ധജല വിതരണ ശുചിത്വ ഏജന്‍സി - കവറേജ്</h1>
-                <div className="grid grid-cols-4 gap-5  p-20">
+                <h1 className="text-blue-800 text-center mt-10 text-xl md:text-3xl font-extrabold overflow-hidden">കേരള ഗ്രാമീണ ശുദ്ധജല വിതരണ ശുചിത്വ ഏജന്‍സി - കവറേജ്</h1>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-10 md:mt-2 p-5 md:p-20 overflow-hidden">
                     <div className="bg-blue-500 h-50 rounded-2xl">
                         <p className="text-center mt-5 text-xl text-white font-bold">ഗ്രാമ പഞ്ചായത്ത് കവറേജ്</p>
                         <h1 className="font-black text-white text-center mt-10 text-5xl">227</h1>
