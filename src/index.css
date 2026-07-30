@@ -5,3 +5,7 @@
 @theme {
   --font-noto: "Noto Sans", "Noto Sans Malayalam", sans-serif;
 }
+
+body{
+  overflow-x: hidden;
+}
