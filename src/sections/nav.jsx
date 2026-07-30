@@ -10,13 +10,13 @@ function NavSec(){
             <div className="flex items-center justify-between px-4 md:px-10 h-full">
                 <img src={logo} alt="logo" className="w-14 h-10 md:w-24 md:h-16"/>
                 <div className="text-[#062748]  font-noto flex gap-10 mt-5 font-extrabold hidden md:flex">
-                    <span className="hover:text-[#80b7ee]">HOME</span>
-                    <span className="hover:text-[#80b7ee]">ABOUT</span>
-                    <span className="hover:text-[#80b7ee]">NEW CONNECTION</span>
-                    <span className="hover:text-[#80b7ee]">ANNOUNCEMNT</span>
-                    <span className="hover:text-[#80b7ee]">GALLERY</span>
-                    <span className="hover:text-[#80b7ee]">CONTACT</span>
-                    <span>COMPLAINT</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">HOME</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">ABOUT</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">NEW CONNECTION</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">ANNOUNCEMNT</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">GALLERY</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">CONTACT</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">COMPLAINT</span>
                 </div>
                 <div className="md:hidden">
                     <button onClick={() => setMenuOpen(!menuOpen)}>
