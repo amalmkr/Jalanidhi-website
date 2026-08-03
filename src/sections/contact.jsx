@@ -8,21 +8,26 @@ function Contacts(){
             id:1,
             name:"NAME-1",
             role:"role-1",
-            image:person1
+            image:person1,
+            number:1234567890
 
         },
         {
             id:2,
             name:"NAME-2",
             role:"role-2",
-            image:person2
+            image:person2,
+            number:1234567890
+
 
         },
         {
             id:3,
             name:"NAME-3",
             role:"role-3",
-            image:person3
+            image:person3,
+            number:1234567890
+
 
         },
 
@@ -38,6 +43,7 @@ function Contacts(){
                         <img src={member.image} alt={member.name} className="w-28 h-28 rounded-full object-cover mx-auto"/>
                         <h3 className="text-xl font-bold mt-4">{member.name}</h3>
                         <p className="text-gray-600">{member.role}</p>
+                        <p className="text-blue-700">{member.number}</p>
                     </div>
                 ))}
             

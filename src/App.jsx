@@ -5,6 +5,7 @@ import Card from './sections/card'
 import About from './sections/about'
 import Services from './sections/service'
 import Contacts from './sections/contact'
+import Footer from './sections/footer'
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <About/>
       <Services/>
       <Contacts/>
+      <Footer/>
     </>
   )
 }

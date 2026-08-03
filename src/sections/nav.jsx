@@ -14,7 +14,7 @@ function NavSec(){
                     <span className="hover:text-[#80b7ee] hover:cursor-pointer">ABOUT</span>
                     <span className="hover:text-[#80b7ee] hover:cursor-pointer">NEW CONNECTION</span>
                     <span className="hover:text-[#80b7ee] hover:cursor-pointer">ANNOUNCEMNT</span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">GALLERY</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">HELP</span>
                     <span className="hover:text-[#80b7ee] hover:cursor-pointer">CONTACT</span>
                     <span className="hover:text-[#80b7ee] hover:cursor-pointer">COMPLAINT</span>
                 </div>
@@ -45,7 +45,7 @@ function NavSec(){
                         ANNOUNCEMENT
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        GALLERY
+                        HELP
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
                         CONTACT
