@@ -1,4 +1,4 @@
-import logo from "../assets/main-logo.png"
+import logo from "../assets/icons/main-logo.png"
 import { FaBars, FaTimes } from "react-icons/fa";
 import { useState } from "react";
 
@@ -10,13 +10,13 @@ function NavSec(){
             <div className="flex items-center justify-between px-4 md:px-10 h-full">
                 <img src={logo} alt="logo" className="w-14 h-10 md:w-24 md:h-16"/>
                 <div className="text-[#062748]  font-noto flex gap-10 mt-5 font-extrabold hidden md:flex">
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">HOME</span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">ABOUT</span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">NEW CONNECTION</span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">ANNOUNCEMNT</span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">HELP</span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">CONTACT</span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer">COMPLAINT</span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a href="#hero">HOME</a></span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a href="#about">ABOUT</a></span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a href="#services">SERVICES</a></span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a>ANNOUNCEMNT</a></span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a>HELP</a></span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a href="#contacts">CONTACT</a></span>
+                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a>COMPLAINT</a></span>
                 </div>
                 <div className="md:hidden">
                     <button onClick={() => setMenuOpen(!menuOpen)}>
@@ -33,13 +33,13 @@ function NavSec(){
                     <div className="mx-3 mt-2 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
                     <ul className="flex flex-col py-4 text-[#062748] font-bold">
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        HOME
+                        <a href="#hero">HOME</a>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        ABOUT
+                        <a href="#about">ABOUT</a>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        NEW CONNECTION
+                        <a href="#services">SERVICES</a>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
                         ANNOUNCEMENT
@@ -48,7 +48,7 @@ function NavSec(){
                         HELP
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        CONTACT
+                        <a href="#contacts">CONTACT</a>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
                         COMPLAINT

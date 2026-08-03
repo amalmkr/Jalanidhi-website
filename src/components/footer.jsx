@@ -1,4 +1,4 @@
-import logo from "../assets/footer-logo.png"
+import logo from "../assets/icons/footer-logo.png"
 
 import {
   FaFacebookF,

@@ -1,6 +1,6 @@
-import person1 from "../assets/person1.jpg";
-import person2 from "../assets/person2.jpg";
-import person3 from "../assets/person3.jpg";
+import person1 from "../assets/images/person1.jpg";
+import person2 from "../assets/images/person2.jpg";
+import person3 from "../assets/images/person3.jpg";
 
 function Contacts(){
     const members=[
@@ -34,7 +34,7 @@ function Contacts(){
     ]
     return(
         <>
-        <section className="p-16 bg-gradient-to-b from-white to-blue-50">
+        <section className="p-16 bg-gradient-to-b from-white to-blue-50" id="contacts">
         <h2 className="text-center text-xl md:text-4xl text-blue-900 font-bold">വിവരവിനിമയം</h2>
         <h4 className="text-center mt-5 text-blue-700 font-bold text-xl">ഞങ്ങളുമായി ബന്ധപ്പെടുക</h4>
             <div className="grid grid-cols-1 mt-12 md:grid-cols-2 lg:grid-cols-3 gap-6">

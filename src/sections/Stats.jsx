@@ -1,4 +1,4 @@
-function Card(){
+function Stats(){
 
     return(
         <>
@@ -46,4 +46,4 @@ function Card(){
     )
 };
 
-export default Card;
+export default Stats;

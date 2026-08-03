@@ -1,9 +1,9 @@
-import carousel_1 from "../assets/carousel-1.jpg"
-import carousel_2 from "../assets/carousel-2.jpg"
-import carousel_3 from "../assets/carousel-3.jpg"
-import carousel_4 from "../assets/carousel-4.jpg"
-import carousel_5 from "../assets/carousel-5.jpg"
-import carousel_6 from "../assets/carousel-6.jpg"
+import carousel_1 from "../assets/images/carousel-1.jpg"
+import carousel_2 from "../assets/images/carousel-2.jpg"
+import carousel_3 from "../assets/images/carousel-3.jpg"
+import carousel_4 from "../assets/images/carousel-4.jpg"
+import carousel_5 from "../assets/images/carousel-5.jpg"
+import carousel_6 from "../assets/images/carousel-6.jpg"
 import { useState,useEffect } from "react";
 
 const  slides=[
@@ -35,7 +35,7 @@ function Hero(){
 
     return(
         <>
-            <div className="w-full">
+            <div className="w-full" id="hero">
                 <div className="relative overflow-hidden">
                     <img src={slides[current].image} alt="carousel" className="w-full h-[300px] sm:h-[350px] md:h-[450px] lg:h-[600px] object-cover transition-all duration-700"/>
                 {slides[current].title && (

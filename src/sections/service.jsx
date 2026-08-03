@@ -43,7 +43,7 @@ function Services() {
   ];
 
   return (
-    <section className="bg-gradient-to-b from-blue-50 to-white py-20 mt-5">
+    <section className="bg-gradient-to-b from-blue-50 to-white py-20 mt-5" id="services">
       <div className="max-w-7xl mx-auto px-5">
 
         {/* Heading */}

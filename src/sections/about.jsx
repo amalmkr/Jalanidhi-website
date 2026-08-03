@@ -1,9 +1,9 @@
-import save from "../assets/save-water.webp";
+import save from "../assets/images/save-water.webp";
 
 function About() {
   return (
     <>
-      <h2 className="text-center text-blue-800 text-xl md:text-3xl font-black mt-10 px-4">
+      <h2 className="text-center text-blue-800 text-xl md:text-3xl font-black mt-10 px-4" id="about">
         ജലനിധി - ജലശ്രീ വാട്ടർസപ്ലൈ സോഷ്യൽ ഡവലപ്പ്മെന്റ് സൊസൈറ്റി
       </h2>
 
