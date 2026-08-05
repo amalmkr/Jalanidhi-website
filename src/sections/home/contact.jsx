@@ -1,6 +1,6 @@
-import person1 from "../assets/images/person1.jpg";
-import person2 from "../assets/images/person2.jpg";
-import person3 from "../assets/images/person3.jpg";
+import person1 from '../../assets/images/person1.jpg';
+import person2 from '../../assets/images/person2.jpg';
+import person3 from '../../assets/images/person3.jpg';
 
 function Contacts(){
     const members=[

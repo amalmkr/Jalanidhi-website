@@ -1,6 +1,8 @@
 import logo from "../assets/icons/main-logo.png"
 import { FaBars, FaTimes } from "react-icons/fa";
 import { useState } from "react";
+import { NavLink } from "react-router-dom";
+import { HashLink } from "react-router-hash-link";
 
 function NavSec(){
     const [menuOpen,setMenuOpen]=useState(false)
@@ -10,13 +12,13 @@ function NavSec(){
             <div className="flex items-center justify-between px-4 md:px-10 h-full">
                 <img src={logo} alt="logo" className="w-14 h-10 md:w-24 md:h-16"/>
                 <div className="text-[#062748]  font-noto flex gap-10 mt-5 font-extrabold hidden md:flex">
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a href="#hero">HOME</a></span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a href="#about">ABOUT</a></span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a href="#services">SERVICES</a></span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a>ANNOUNCEMNT</a></span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a>HELP</a></span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a href="#contacts">CONTACT</a></span>
-                    <span className="hover:text-[#80b7ee] hover:cursor-pointer"><a>COMPLAINT</a></span>
+                    <NavLink to="/" end className={({isActive})=>isActive ? "text-[#80b7ee]": "hover:text-[#80b7ee]"}>Home</NavLink>
+                    <NavLink to="/about" className={({isActive})=>isActive ? "text-[#80b7ee]": "hover:text-[#80b7ee]" }>About</NavLink>
+                    <HashLink smooth to="/#services" className="hover:text-[#80b7ee]">Services</HashLink>
+                    <NavLink to="/quick-pay" className={({isActive})=>isActive ? "text-[#80b7ee]": "hover:text-[#80b7ee]" }>Pay Bill</NavLink>
+                    <HashLink smooth to="/#help" className="hover:text-[#80b7ee]">Help</HashLink>
+                    <HashLink smooth to="/#contacts" className="hover:text-[#80b7ee]">Contacts</HashLink>
+                    <NavLink to="/complaint" className={({isActive})=>isActive ? "text-[#80b7ee]": "hover:text-[#80b7ee]" }>Complaint</NavLink>
                 </div>
                 <div className="md:hidden">
                     <button onClick={() => setMenuOpen(!menuOpen)}>
@@ -33,25 +35,25 @@ function NavSec(){
                     <div className="mx-3 mt-2 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
                     <ul className="flex flex-col py-4 text-[#062748] font-bold">
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        <a href="#hero">HOME</a>
+                        <NavLink to="/" end onClick={() => setMenuOpen(false)} className={({isActive})=>isActive ? "text-[#80b7ee]": "hover:text-[#80b7ee]" }>Home</NavLink>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        <a href="#about">ABOUT</a>
+                       <NavLink to="/about" onClick={() => setMenuOpen(false)} className={({isActive})=>isActive ? "text-[#80b7ee]": "hover:text-[#80b7ee]" }>About</NavLink>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        <a href="#services">SERVICES</a>
+                        <HashLink smooth to="/#services" onClick={() => setMenuOpen(false)} className="hover:text-[#80b7ee]">Services</HashLink>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        ANNOUNCEMENT
+                        <NavLink to="/quick-pay" onClick={() => setMenuOpen(false)} className={({isActive})=>isActive ? "text-[#80b7ee]": "hover:text-[#80b7ee]" }>Pay Bill</NavLink>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        HELP
+                        <HashLink smooth to="/#help" onClick={() => setMenuOpen(false)} className="hover:text-[#80b7ee]">Help</HashLink>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        <a href="#contacts">CONTACT</a>
+                        <HashLink smooth to="/#contacts" onClick={() => setMenuOpen(false)} className="hover:text-[#80b7ee]">Contacts</HashLink>
                         </li>
                         <li className="px-6 py-4 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                        COMPLAINT
+                        <NavLink to="/complaint" onClick={() => setMenuOpen(false)} className={({isActive})=>isActive ? "text-[#80b7ee]": "hover:text-[#80b7ee]" }>Complaint</NavLink>
                         </li>
                     </ul>
                     </div>

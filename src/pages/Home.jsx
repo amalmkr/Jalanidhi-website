@@ -1,8 +1,9 @@
-import Hero from '../sections/hero'
-import About from '../sections/about'
-import Services from '../sections/service'
-import Contacts from '../sections/contact'
-import Stats from '../sections/Stats'
+import Hero from '../sections/home/hero'
+import About from '../sections/home/LandingAbout'
+import Services from '../sections/home/service'
+import Contacts from '../sections/home/contact'
+import Stats from '../sections/home/Stats'
+import Footer from '../components/footer'
 
 
 function Home(){
@@ -14,7 +15,7 @@ function Home(){
         <About/>
         <Services/>
         <Contacts/>
-        
+        <Footer/>
         </>
     )
 }

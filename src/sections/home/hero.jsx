@@ -1,9 +1,9 @@
-import carousel_1 from "../assets/images/carousel-1.jpg"
-import carousel_2 from "../assets/images/carousel-2.jpg"
-import carousel_3 from "../assets/images/carousel-3.jpg"
-import carousel_4 from "../assets/images/carousel-4.jpg"
-import carousel_5 from "../assets/images/carousel-5.jpg"
-import carousel_6 from "../assets/images/carousel-6.jpg"
+import carousel_1 from "../../assets/images/carousel-1.jpg";
+import carousel_2 from "../../assets/images/carousel-2.jpg";
+import carousel_3 from "../../assets/images/carousel-3.jpg";
+import carousel_4 from "../../assets/images/carousel-4.jpg";
+import carousel_5 from "../../assets/images/carousel-5.jpg";
+import carousel_6 from "../../assets/images/carousel-6.jpg";
 import { useState,useEffect } from "react";
 
 const  slides=[
