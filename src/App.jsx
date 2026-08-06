@@ -20,6 +20,7 @@ function App() {
       <Route path='/about' element={<About/>}/>
       <Route path='/quick-pay' element={<QuickPay/>}/>
     </Routes>
+    <Footer/>
     </BrowserRouter>
     </>
   )

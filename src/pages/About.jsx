@@ -1,6 +1,5 @@
 import { useState } from "react";
 import AboutHero from "../assets/images/AboutHero.jpg";
-import Footer from "../components/footer";
 import Accordion from "../components/Accordian.jsx";
 
 function About() {
@@ -185,7 +184,7 @@ function About() {
       </section>
 
 
-      <Footer />
+
     </>
   );
 }
