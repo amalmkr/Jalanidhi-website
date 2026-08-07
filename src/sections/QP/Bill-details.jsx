@@ -93,23 +93,20 @@ function Bill_details(){
                     <div className="flex items-center">
                         <MdOutlineCurrencyRupee className="text-2xl text-green-800" />
                         <span className="text-3xl font-bold text-green-800">
-                            330
+                            140
                         </span>
                     </div>
                 </div>
                 <div className="flex justify-between mt-5">
                     <span className="text-gray-500 text-sm md:text-xl">Status</span>
-                    <span>🔴 Unpaid</span>
+                    <span className="bg-red-700 rounded-4xl font-medium md:font-bold p-2 md:p-3 text-white"> Unpaid</span>
                 </div>
                     <button
                         type="submit"
-                        className="w-full md:w-64 mx-auto block bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
+                        className="w-full mt-8 md:w-64 mx-auto block bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
                     >
                         Proceed to Pay
                     </button>
-
-                
-
             </div>
         </section>
         </>

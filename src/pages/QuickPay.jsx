@@ -8,8 +8,9 @@ function QuickPay(){
   return(
     <>
     <QP_hero/>
-    <Search_bill/>
-    <Bill_details/>
+    <Search_bill onSearch={() => setShowBill(true)} />
+    {showBill && <Bill_details />}
+    
     </>
   )
 }

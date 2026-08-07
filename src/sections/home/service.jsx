@@ -7,18 +7,19 @@ import {
   FaHeadset,
   FaChevronRight,
 } from "react-icons/fa";
+import { GrAnnounce } from "react-icons/gr";
 
 function Services() {
   const services = [
     {
       icon: <FaMoneyBillWave />,
       title: "ജല ബിൽ അടയ്ക്കുക",
-      description: "ഓൺലൈനായി സുരക്ഷിതമായി ജല ബിൽ അടയ്ക്കാം..",
+      description: "ഓൺലൈനായി സുരക്ഷിതമായി ജല ബിൽ അടയ്ക്കാം.",
     },
     {
-      icon: <FaFileInvoiceDollar />,
-      title: "ജല ബിൽ കാണുക",
-      description: "നിങ്ങളുടെ നിലവിലെ ബില്ല് പരിശോധിക്കാം.",
+      icon: <GrAnnounce/>,
+      title: "അറിയിപ്പുകൾ ",
+      description: "ജലനിധിയുമായി ബന്ധപ്പെട്ട ഏറ്റവും പുതിയ അറിയിപ്പുകൾ.",
     },
     {
       icon: <FaTint />,

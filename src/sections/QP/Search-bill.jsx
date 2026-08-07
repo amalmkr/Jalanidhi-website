@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LuUserSearch } from "react-icons/lu";
 
-function Search_bill(){
+function Search_bill({onSearch}){
     return(
         <>
             <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-6 md:p-10 my-10 ">
@@ -51,8 +51,9 @@ function Search_bill(){
                     {/* Button */}
                     <div className="pt-2">
                     <button
-                        type="submit"
+                        type="button"
                         className="w-full md:w-64 mx-auto block bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
+                        onClick={onSearch}
                     >
                         Search
                     </button>
