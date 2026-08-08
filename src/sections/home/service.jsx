@@ -8,6 +8,8 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { GrAnnounce } from "react-icons/gr";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Services() {
   const services = [
@@ -15,6 +17,7 @@ function Services() {
       icon: <FaMoneyBillWave />,
       title: "ജല ബിൽ അടയ്ക്കുക",
       description: "ഓൺലൈനായി സുരക്ഷിതമായി ജല ബിൽ അടയ്ക്കാം.",
+      link:"/quick-pay"
     },
     {
       icon: <GrAnnounce/>,
@@ -67,6 +70,7 @@ function Services() {
 
           {services.map((service, index) => (
 
+            <Link to={service.link} key={index}>
             <div
               key={index}
               className="
@@ -130,6 +134,7 @@ function Services() {
             
 
             </div>
+            </Link>
 
           ))}
 

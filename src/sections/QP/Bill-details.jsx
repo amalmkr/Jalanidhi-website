@@ -3,7 +3,10 @@ import { CiCircleInfo } from "react-icons/ci";
 import { IoSpeedometerOutline } from "react-icons/io5";
 import { FaReceipt } from "react-icons/fa6";
 import { MdOutlineCurrencyRupee } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+
 function Bill_details(){
+    const navigate=useNavigate();
     return(
         <>
         <section className="mt-20 p-10 px-10">
@@ -102,8 +105,9 @@ function Bill_details(){
                     <span className="bg-red-700 rounded-4xl font-medium md:font-bold p-2 md:p-3 text-white"> Unpaid</span>
                 </div>
                     <button
-                        type="submit"
+                        type="button"
                         className="w-full mt-8 md:w-64 mx-auto block bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
+                        onClick={()=>navigate("/payment")}
                     >
                         Proceed to Pay
                     </button>
