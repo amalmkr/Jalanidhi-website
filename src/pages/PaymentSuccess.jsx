@@ -1,3 +1,4 @@
+import { IoMdCheckmark } from "react-icons/io";
 function PaymentSuccess() {
     return (
         <section className="min-h-[70vh] flex items-center justify-center px-5 py-10">
@@ -7,7 +8,7 @@ function PaymentSuccess() {
                 {/* Success Icon */}
                 <div className="w-20 h-20 mx-auto rounded-full bg-green-100 flex items-center justify-center">
                     <span className="text-5xl text-green-600">
-                        ✓
+                        <IoMdCheckmark/>
                     </span>
                 </div>
 
@@ -68,13 +69,21 @@ function PaymentSuccess() {
                 </div>
 
                 {/* Button */}
-                <button
-                    type="button"
-                    className="w-full mt-8 bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
-                >
-                    Back to Quick Pay
-                </button>
-
+                    <div className="flex gap-5">
+                    <button
+                        type="button"
+                        className="w-full mt-8 bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold px-1  py-3 rounded-lg text-sm md:text-xl"
+                    >
+                        Back to Quick Pay
+                    </button>
+                    <button
+                        type="button"
+                        className="w-full mt-8 bg-green-600 hover:bg-green-700 transition duration-300 text-white font-bold md:font-extrabold py-3 rounded-lg"
+                        onClick={()=>alert("download bill will available soon")}
+                    >
+                        Download Bill
+                    </button>
+                </div>
             </div>
 
         </section>

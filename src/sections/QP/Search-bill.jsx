@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { LuUserSearch } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
 
 function Search_bill({onSearch}){
+    const navigate=useNavigate();
     return(
         <>
             <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-6 md:p-10 my-10 ">
@@ -49,13 +51,20 @@ function Search_bill({onSearch}){
                     </div>
 
                     {/* Button */}
-                    <div className="pt-2">
+                    <div className="pt-2 flex gap-5">
                     <button
                         type="button"
                         className="w-full md:w-64 mx-auto block bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
                         onClick={onSearch}
                     >
                         Search
+                    </button>
+                    <button
+                        type="button"
+                        className="w-full md:w-64 mx-auto block bg-green-600 hover:bg-green-700 transition duration-300 text-white font-bold py-3 rounded-lg"
+                         onClick={()=>navigate('/payment-history')}
+                    >
+                        Payment History
                     </button>
                     </div>
 
