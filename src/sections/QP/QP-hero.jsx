@@ -7,7 +7,7 @@ return(
             <img src={QP} className='object-cover w-full h-[220px] md:h-[450px]'/>
             <div className="absolute inset-0 bg-black/40"></div>
             <div className='inset-0 flex justify-center items-center absolute'>
-              <h1 className=' text-3xl md:text-5xl font-black  text-white '>ബില്ല് അടക്കാം</h1>
+              <h1 className=' text-3xl md:text-5xl font-black text-white '>ബില്ല് അടക്കാം</h1>
             </div>
           </div>
         <div className='mt-10'>
