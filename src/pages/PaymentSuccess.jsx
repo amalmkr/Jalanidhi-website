@@ -1,5 +1,8 @@
 import { IoMdCheckmark } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
+
 function PaymentSuccess() {
+    const navigate=useNavigate()
     return (
         <section className="min-h-[70vh] flex items-center justify-center px-5 py-10">
 
@@ -73,6 +76,7 @@ function PaymentSuccess() {
                     <button
                         type="button"
                         className="w-full mt-8 bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold px-1  py-3 rounded-lg text-sm md:text-xl"
+                        onClick={()=>navigate('/quick-pay')}
                     >
                         Back to Quick Pay
                     </button>

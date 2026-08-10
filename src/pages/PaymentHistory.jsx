@@ -2,82 +2,92 @@ import PaymentHistoryHero from "../sections/PaymentHistory/PaymentHistory-Hero";
 import PayUserDetails from "../sections/PaymentHistory/PayUserDatails";
 import PaymentHistoryTable from "../sections/PaymentHistory/PaymentHistoryTable";
 
-function PaymentHistory(){
-
-    return(
+function PaymentHistory() {
+    return (
         <>
-            <PaymentHistoryHero/>
-            <PayUserDetails/>
-            <div className="max-w-6xl mx-auto mt-10">
+            <PaymentHistoryHero />
 
-    <h2 className="text-2xl md:text-3xl font-bold text-blue-800 mb-5">
-        ബിൽ അടച്ച വിവരങ്ങൾ
-    </h2>
+            <PayUserDetails />
 
+            {/* Payment History Section */}
+            <section className="max-w-6xl mx-auto px-4 md:px-6 mt-14 mb-16">
 
+                {/* Heading */}
+                <div className="mb-7">
 
-    {/* Table Card */}
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden">
+                    <h2 className="text-2xl md:text-3xl font-bold text-blue-800 text-center">
+                        ബിൽ അടച്ച വിവരങ്ങൾ
+                    </h2>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+                    <p className="text-gray-500 mt-2 text-center">
+                        നിങ്ങളുടെ മുൻകാല ബിൽ പേയ്മെന്റുകളുടെ വിവരങ്ങൾ
+                    </p>
 
-            <table className="w-full min-w-[900px]">
-
-                {/* Header */}
-                <thead className="bg-blue-50 border-b border-blue-100">
-
-                    <tr>
-
-                        <th className="px-6 py-4 text-left text-sm font-bold text-blue-800">
-                            ബിൽ മാസം
-                        </th>
-
-                        <th className="px-6 py-4 text-left text-sm font-bold text-blue-800">
-                            ബിൽ നമ്പർ
-                        </th>
-
-                        <th className="px-6 py-4 text-left text-sm font-bold text-blue-800">
-                            തുക
-                        </th>
-
-                        <th className="px-6 py-4 text-left text-sm font-bold text-blue-800">
-                            പണമടച്ച തീയതി
-                        </th>
-
-                        <th className="px-6 py-4 text-left text-sm font-bold text-blue-800">
-                            പേയ്മെന്റ് രീതി
-                        </th>
-
-                        <th className="px-6 py-4 text-left text-sm font-bold text-blue-800">
-                            നില
-                        </th>
-
-                        <th className="px-6 py-4 text-left text-sm font-bold text-blue-800">
-                            രസീത്
-                        </th>
-
-                    </tr>
-
-                </thead>
+                </div>
 
 
-                {/* Rows */}
-                <tbody className="divide-y divide-gray-100">
+                {/* Table Card */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
-                    <PaymentHistoryTable />
+                    {/* Responsive wrapper */}
+                    <div className="overflow-x-auto">
 
-                </tbody>
+                        <table className="w-full min-w-[1000px]">
 
-            </table>
+                            {/* Header */}
+                            <thead className="bg-blue-50">
 
-        </div>
+                                <tr>
 
-    </div>
+                                    <th className="px-6 py-5 text-left text-sm font-bold text-blue-800">
+                                        ബിൽ മാസം
+                                    </th>
 
-</div>            
+                                    <th className="px-6 py-5 text-left text-sm font-bold text-blue-800">
+                                        ബിൽ നമ്പർ
+                                    </th>
+
+                                    <th className="px-6 py-5 text-left text-sm font-bold text-blue-800">
+                                        തുക
+                                    </th>
+
+                                    <th className="px-6 py-5 text-left text-sm font-bold text-blue-800">
+                                        പണമടച്ച തീയതി
+                                    </th>
+
+                                    <th className="px-6 py-5 text-left text-sm font-bold text-blue-800">
+                                        പേയ്മെന്റ് രീതി
+                                    </th>
+
+                                    <th className="px-6 py-5 text-left text-sm font-bold text-blue-800">
+                                        നില
+                                    </th>
+
+                                    <th className="px-6 py-5 text-left text-sm font-bold text-blue-800">
+                                        രസീത്
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            {/* Payment Rows */}
+                            <tbody className="divide-y divide-gray-100">
+
+                                <PaymentHistoryTable />
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
         </>
-    )
+    );
 }
 
 export default PaymentHistory;
