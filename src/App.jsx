@@ -8,6 +8,7 @@ import About from './pages/About';
 import Payment from './pages/payment';
 import PaymentSucceess from './pages/PaymentSuccess';
 import PaymentHistory from './pages/PaymentHistory';
+import Complaint from './pages/Complaint';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 
@@ -25,6 +26,7 @@ function App() {
       <Route path='/payment' element={<Payment/>}/>
       <Route path='/payment-success' element={<PaymentSucceess/>}/>
       <Route path='/payment-history' element={<PaymentHistory/>}/>
+      <Route path='/complaint' element={<Complaint/>}/>
     </Routes>
     <Footer/>
     </BrowserRouter>

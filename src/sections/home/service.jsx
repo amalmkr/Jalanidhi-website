@@ -43,6 +43,7 @@ function Services() {
       icon: <FaHeadset />,
       title: "പരാതി രജിസ്റ്റർ ചെയ്യുക",
       description: "ജലവിതരണവുമായി ബന്ധപ്പെട്ട പരാതികൾ ഓൺലൈനായി രജിസ്റ്റർ ചെയ്യാം.",
+      link:"/complaint"
     },
   ];
 
