@@ -9,6 +9,7 @@ import Payment from './pages/payment';
 import PaymentSucceess from './pages/PaymentSuccess';
 import PaymentHistory from './pages/PaymentHistory';
 import Complaint from './pages/Complaint';
+import ScrollToTop from './components/ScrollToTop';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 
@@ -18,6 +19,7 @@ function App() {
   return (
     <>
     <BrowserRouter>
+    <ScrollToTop/>
     <NavSec/>
     <Routes>
       <Route path='/' element={<Home/>}/>
