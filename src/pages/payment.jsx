@@ -1,17 +1,24 @@
 import PH from "../assets/images/payment-hero.webp";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 
 function Payment(){
             const [paymentMethod,setPaymentMethod]=useState("");
             const navigate=useNavigate();
+            const location=useLocation();
+            const bill=location.state;
             function handlePayment() {
             if (paymentMethod === "") {
                 alert("Please select a payment method");
                 return;
             }
 
-            navigate("/payment-success");
+            navigate("/payment-success",{
+                state:{
+                    bill:bill,
+                    paymentMethod:paymentMethod
+                }
+            });
             }
     return(
         <>
@@ -31,23 +38,23 @@ function Payment(){
                 <hr className="border-gray-200 my-8 "/>
                 <div className="flex justify-between py-2">
                     <span className="text-gray-600">Consumer Name</span>
-                    <span className="text-gray-800 font-bold">Amal M</span>
+                    <span className="text-gray-800 font-bold">{bill.consumerName}</span>
                 </div>
                 <div className="flex justify-between py-2">
                     <span className="text-gray-600">Consumer Number</span>
-                    <span className="text-gray-800 font-bold">JN00012</span>
+                    <span className="text-gray-800 font-bold">{bill.consumerNumber}</span>
                 </div>
                 <div className="flex justify-between py-2">
                     <span className="text-gray-600">Bill Month</span>
-                    <span className="text-gray-800 font-bold">August 2026</span>
+                    <span className="text-gray-800 font-bold">{bill.billMonth}</span>
                 </div>
                 <div className="flex justify-between py-2">
                     <span className="text-gray-600">Due Date</span>
-                    <span className="text-gray-800 font-bold">15 Aug 2026</span>
+                    <span className="text-gray-800 font-bold">{bill.dueDate}</span>
                 </div>
                 <div className="flex justify-between py-2 mt-5">
                     <span className="text-gray-600 text-xl font-bold">Total Amount</span>
-                    <span className="text-gray-800  text-xl font-bold text-green-500">140/-</span>
+                    <span className="text-gray-800  text-xl font-bold text-green-500"> ₹ {bill.amount}</span>
                 </div>
                 <hr className="border-gray-200 my-8 "/>
                 <h2 className="text-center text-blue-800 font-bold text-xl md:text-3xl">Select Payment Method</h2>
@@ -101,7 +108,7 @@ function Payment(){
                     className="w-full md:w-64 mx-auto block bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
                     onClick={handlePayment}                
                 >
-                    Pay ₹140
+                    Pay ₹ {bill.amount}
                 </button>
                 </div>             
             </div>

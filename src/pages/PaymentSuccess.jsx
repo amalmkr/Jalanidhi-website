@@ -1,8 +1,42 @@
 import { IoMdCheckmark } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 function PaymentSuccess() {
     const navigate=useNavigate()
+    const location=useLocation();
+    const {bill,paymentMethod}=location.state;
+    const payment = {
+            month: bill.billMonth,
+            billNo: bill.consumerNumber,
+            amount: bill.amount,
+            date: new Date().toLocaleDateString(),
+            method: paymentMethod,
+            status: "Paid"
+    };
+
+useEffect(() => {
+    const existingPayments =
+        JSON.parse(localStorage.getItem("payments")) || [];
+
+    const alreadyPaid = existingPayments.some(
+        (item) =>
+            item.billNo === payment.billNo &&
+            item.month === payment.month
+    );
+
+    if (!alreadyPaid) {
+        existingPayments.push(payment);
+
+        localStorage.setItem(
+            "payments",
+            JSON.stringify(existingPayments)
+        );
+    }
+},[payment.billNo, payment.month]);
+
+
+
     return (
         <section className="min-h-[70vh] flex items-center justify-center px-5 py-10">
 
@@ -35,7 +69,7 @@ function PaymentSuccess() {
                         </span>
 
                         <span className="font-bold">
-                            JN00012
+                            {bill.consumerNumber}
                         </span>
                     </div>
 
@@ -45,7 +79,7 @@ function PaymentSuccess() {
                         </span>
 
                         <span className="font-bold text-green-600">
-                            ₹140
+                            ₹ {bill.amount}
                         </span>
                     </div>
 
@@ -55,7 +89,7 @@ function PaymentSuccess() {
                         </span>
 
                         <span className="font-bold">
-                            UPI
+                            {paymentMethod}
                         </span>
                     </div>
 
@@ -76,9 +110,9 @@ function PaymentSuccess() {
                     <button
                         type="button"
                         className="w-full mt-8 bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold px-1  py-3 rounded-lg text-sm md:text-xl"
-                        onClick={()=>navigate('/quick-pay')}
+                        onClick={()=>navigate('/payment-history')}
                     >
-                        Back to Quick Pay
+                        Payment History
                     </button>
                     <button
                         type="button"

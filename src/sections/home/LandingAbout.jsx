@@ -1,6 +1,8 @@
 import save from "../../assets/images/save-water.webp";
+import { useNavigate } from "react-router-dom";
 
 function About() {
+  const navigate = useNavigate();
   return (
     <>
       <h2 className="text-center text-blue-800 text-xl md:text-3xl font-black mt-10 px-4" >
@@ -24,7 +26,7 @@ function About() {
             ഏജന്‍സിയാണ് കെ.ആര്‍.ഡബ്യു.എസ്സ്.എ.
           </p>
 
-          <button className="mt-6 bg-blue-800 text-white text-sm font-bold px-6 py-3 rounded-full w-fit hover:bg-blue-500">
+          <button className="mt-6 bg-blue-800 text-white text-sm font-bold px-6 py-3 rounded-full w-fit hover:bg-blue-500" onClick={()=>navigate('/about')}>
             കൂടുതൽ അറിയുക
           </button>
         </div>

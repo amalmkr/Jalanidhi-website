@@ -107,7 +107,15 @@ function Bill_details(){
                     <button
                         type="button"
                         className="w-full mt-8 md:w-64 mx-auto block bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
-                        onClick={()=>navigate("/payment")}
+                        onClick={()=>navigate("/payment",{
+                            state :{
+                                consumerName:"Amal M",
+                                consumerNumber:"JN00123",
+                                billMonth:"August 2026",
+                                dueDate:"15 August 2026",
+                                amount:140
+                            }
+                        })}
                     >
                         Proceed to Pay
                     </button>

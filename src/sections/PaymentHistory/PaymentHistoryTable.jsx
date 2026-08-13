@@ -1,33 +1,36 @@
 import jsPDF from "jspdf";
 function PaymentHistoryTable() {
-
-    const payment = [
-        {
-            month: "August 2026",
-            billNo: "JN-2026-08-123",
-            amount: 100,
-            date: "10 Aug 2026",
-            method: "UPI",
-            status: "Paid"
-        },
-        {
-            month: "July 2026",
-            billNo: "JN-2026-07-123",
-            amount: 130,
-            date: "23 Jul 2026",
-            method: "UPI",
-            status: "Paid"
-        },
-        {
-            month: "June 2026",
-            billNo: "JN-2026-06-123",
-            amount: 100,
-            date: "15 Jun 2026",
-            method: "UPI",
-            status: "Paid"
-        },
-    ]
-        function handleDownload(payment) {
+const savedPayments =
+    JSON.parse(localStorage.getItem("payments")) || [];
+const payment = [
+    ...savedPayments,
+    {
+        month: "August 2026",
+        billNo: "JN-2026-08-123",
+        amount: 100,
+        date: "10 Aug 2026",
+        method: "UPI",
+        status: "Paid"
+    },
+    {
+        month: "July 2026",
+        billNo: "JN-2026-07-123",
+        amount: 130,
+        date: "23 Jul 2026",
+        method: "UPI",
+        status: "Paid"
+    },
+    {
+        month: "June 2026",
+        billNo: "JN-2026-06-123",
+        amount: 100,
+        date: "15 Jun 2026",
+        method: "UPI",
+        status: "Paid"
+    }
+];     
+    
+    function handleDownload(payment) {
 
             const doc = new jsPDF();
 
