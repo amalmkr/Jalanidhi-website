@@ -23,6 +23,7 @@ function Services() {
       icon: <GrAnnounce/>,
       title: "അറിയിപ്പുകൾ ",
       description: "ജലനിധിയുമായി ബന്ധപ്പെട്ട ഏറ്റവും പുതിയ അറിയിപ്പുകൾ.",
+      link:"/announcement"
     },
     {
       icon: <FaTint />,

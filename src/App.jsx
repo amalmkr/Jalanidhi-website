@@ -10,7 +10,9 @@ import PaymentSucceess from './pages/PaymentSuccess';
 import PaymentHistory from './pages/PaymentHistory';
 import Complaint from './pages/Complaint';
 import ScrollToTop from './components/ScrollToTop';
+import Announcemnt from './pages/Announcement';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+
 
 
 function App() {
@@ -29,6 +31,7 @@ function App() {
       <Route path='/payment-success' element={<PaymentSucceess/>}/>
       <Route path='/payment-history' element={<PaymentHistory/>}/>
       <Route path='/complaint' element={<Complaint/>}/>
+      <Route path='/announcement' element={<Announcemnt/>}/>
     </Routes>
     <Footer/>
     </BrowserRouter>
