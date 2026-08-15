@@ -1,4 +1,4 @@
-name: Daily Project Analysis
+name: Jalanidhi Daily Project Analysis
 
 on:
   workflow_dispatch:
@@ -8,38 +8,199 @@ permissions:
   issues: read
 
 jobs:
-  analyze-project:
+  daily-analysis:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Download the repository
+
+      # ==========================================
+      # 1. Checkout repository
+      # ==========================================
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Collect recent project activity
-      - name: Collect project activity
+
+      # ==========================================
+      # 2. Get India date and time
+      # ==========================================
+      - name: Get India date and time
+        shell: bash
+        run: |
+          echo "INDIA_DATE=$(TZ=Asia/Kolkata date '+%B %d, %Y')" >> "$GITHUB_ENV"
+          echo "INDIA_TIME=$(TZ=Asia/Kolkata date '+%I:%M %p')" >> "$GITHUB_ENV"
+
+
+      # ==========================================
+      # 3. Check PROJECT_STATUS.md
+      # ==========================================
+      - name: Check project status file
+        shell: bash
+        run: |
+          if [ ! -f "PROJECT_STATUS.md" ]; then
+            echo "ERROR: PROJECT_STATUS.md was not found."
+            exit 1
+          fi
+
+          echo "PROJECT_STATUS.md found."
+
+
+      # ==========================================
+      # 4. Calculate project progress
+      # ==========================================
+      - name: Calculate project progress
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import re
+
+          with open("PROJECT_STATUS.md", "r", encoding="utf-8") as file:
+              content = file.read()
+
+          def get_section(section_name, next_section_name=None):
+              if next_section_name:
+                  pattern = (
+                      r"## "
+                      + re.escape(section_name)
+                      + r"(.*?)(?=## "
+                      + re.escape(next_section_name)
+                      + r"|$)"
+                  )
+              else:
+                  pattern = (
+                      r"## "
+                      + re.escape(section_name)
+                      + r"(.*)$"
+                  )
+
+              match = re.search(pattern, content, re.DOTALL)
+
+              if match:
+                  return match.group(1)
+
+              return ""
+
+          completed_text = get_section(
+              "Completed",
+              "In Progress"
+          )
+
+          in_progress_text = get_section(
+              "In Progress",
+              "Remaining"
+          )
+
+          remaining_text = get_section(
+              "Remaining"
+          )
+
+          def count_tasks(text):
+              return len(
+                  re.findall(
+                      r"(?m)^\s*-\s+.+$",
+                      text
+                  )
+              )
+
+          completed = count_tasks(completed_text)
+          in_progress = count_tasks(in_progress_text)
+          remaining = count_tasks(remaining_text)
+
+          total = (
+              completed
+              + in_progress
+              + remaining
+          )
+
+          if total == 0:
+              percentage = 0
+          else:
+              percentage = round(
+                  (
+                      completed
+                      + (in_progress * 0.5)
+                  )
+                  / total
+                  * 100
+              )
+
+          percentage = max(
+              0,
+              min(100, percentage)
+          )
+
+          bar_length = 20
+
+          filled = round(
+              percentage
+              / 100
+              * bar_length
+          )
+
+          progress_bar = (
+              "█" * filled
+              + "░" * (bar_length - filled)
+          )
+
+          with open(
+              "progress.txt",
+              "w",
+              encoding="utf-8"
+          ) as file:
+
+              file.write(
+                  f"COMPLETED={completed}\n"
+                  f"IN_PROGRESS={in_progress}\n"
+                  f"REMAINING={remaining}\n"
+                  f"TOTAL={total}\n"
+                  f"PERCENTAGE={percentage}\n"
+                  f"PROGRESS_BAR={progress_bar}\n"
+              )
+
+          print("Project progress calculated.")
+          print(f"Completed: {completed}")
+          print(f"In Progress: {in_progress}")
+          print(f"Remaining: {remaining}")
+          print(f"Total: {total}")
+          print(f"Progress: {percentage}%")
+          print(progress_bar)
+          PY
+
+
+      # ==========================================
+      # 5. Collect GitHub activity
+      # ==========================================
+      - name: Collect GitHub activity
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "=== COMMITS FROM LAST 24 HOURS ===" > project_data.txt
+
+          echo "===== PROJECT STATUS =====" > project_data.txt
+
+          cat PROJECT_STATUS.md >> project_data.txt
+
+          echo "" >> project_data.txt
+          echo "===== COMMITS LAST 24 HOURS =====" >> project_data.txt
 
           git log \
             --since="24 hours ago" \
-            --pretty=format:"Commit: %h%nAuthor: %an%nDate: %ad%nMessage: %s%n" \
-            --date=short >> project_data.txt
+            --pretty=format:"%h | %an | %ad | %s" \
+            --date=iso \
+            >> project_data.txt
 
           echo "" >> project_data.txt
-          echo "=== FILE CHANGES FROM LAST 24 HOURS ===" >> project_data.txt
+          echo "===== FILE CHANGES LAST 24 HOURS =====" >> project_data.txt
 
           git log \
             --since="24 hours ago" \
             --stat \
-            --pretty=format:"" >> project_data.txt
+            --pretty=format:"" \
+            >> project_data.txt
 
           echo "" >> project_data.txt
-          echo "=== RECENT GITHUB ISSUES ===" >> project_data.txt
+          echo "===== GITHUB ISSUES =====" >> project_data.txt
 
           gh issue list \
             --state all \
@@ -47,83 +208,116 @@ jobs:
             --json number,title,state,labels,updatedAt \
             >> project_data.txt
 
-          echo "" >> project_data.txt
-          echo "=== CURRENT PROJECT FILES ===" >> project_data.txt
+          echo ""
+          echo "GitHub activity collected."
 
-          find . \
-            -type f \
-            -not -path "./.git/*" \
-            -not -path "./node_modules/*" \
-            -not -path "./.github/*" \
-            | sort \
-            | head -300 >> project_data.txt
 
-      # 3. Ask Gemini to analyze the project
-      - name: Analyze project with Gemini
+      # ==========================================
+      # 6. Analyze repository with Gemini
+      # ==========================================
+      - name: Analyze repository with Gemini
+        shell: bash
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          INDIA_DATE: ${{ env.INDIA_DATE }}
         run: |
-          python <<'PY'
+
+          python3 <<'PY'
           import os
           import json
           import urllib.request
+          import urllib.error
 
-          with open("project_data.txt", "r", encoding="utf-8") as file:
+          api_key = os.environ.get(
+              "GEMINI_API_KEY"
+          )
+
+          if not api_key:
+              raise RuntimeError(
+                  "GEMINI_API_KEY secret is missing."
+              )
+
+          with open(
+              "project_data.txt",
+              "r",
+              encoding="utf-8"
+          ) as file:
+
               project_data = file.read()
 
+          with open(
+              "progress.txt",
+              "r",
+              encoding="utf-8"
+          ) as file:
+
+              progress_data = file.read()
+
+          today = os.environ["INDIA_DATE"]
+
           prompt = f"""
-          You are a software project progress analyst.
+          You are analyzing the GitHub repository for the
+          Jalanidhi Water Authority Website.
 
-          Analyze this GitHub repository and determine the developer's
-          project progress during the last 24 hours.
-
-          The project is a React frontend project called Jalanidhi.
-
-          Your tasks:
-
-          1. Identify work that was actually completed.
-          2. Identify work that appears to be in progress.
-          3. Identify important remaining tasks.
-          4. Recommend the most useful next task.
+          Date:
+          {today}
 
           IMPORTANT RULES:
 
-          - Do NOT invent completed work.
-          - Only call something completed when there is evidence.
-          - Use commits, changed files and GitHub issues as evidence.
-          - If there were no commits in the last 24 hours, clearly say so.
-          - Do not assume that an existing file means its functionality is complete.
-          - Focus especially on React pages, components, UI, state,
-            navigation, forms and user flows.
-          - Keep the report easy to read on Telegram.
+          1. Never invent completed work.
 
-          Return exactly this structure:
+          2. "COMPLETED TODAY" must only contain work
+             supported by commits from the last 24 hours.
 
-          📊 JALANIDHI DAILY PROJECT REPORT
+          3. PROJECT_STATUS.md is the source of truth
+             for overall project status.
 
-          📅 Date: [today's date]
+          4. Never invent remaining tasks.
 
-          ✅ COMPLETED TODAY
-          - ...
+          5. Only mention remaining tasks that already
+             exist in PROJECT_STATUS.md.
 
-          🔄 IN PROGRESS
-          - ...
+          6. Do not treat an old commit as today's work.
 
-          ⬜ REMAINING TASKS
-          - ...
+          7. If there are no commits during the last
+             24 hours, clearly say:
+             No commits were made in the last 24 hours.
 
-          🎯 RECOMMENDED NEXT TASK
-          - ...
+          8. Choose the recommended next task only from
+             the Remaining section.
 
-          📝 SUMMARY
-          ...
+          9. Keep the response concise.
 
-          Here is the repository information:
+          10. Do not calculate a project percentage.
+              The workflow calculates that separately.
+
+          PROJECT PROGRESS:
+
+          {progress_data}
+
+          REPOSITORY INFORMATION:
 
           {project_data}
+
+          Return ONLY these five sections:
+
+          TODAY_ACTIVITY:
+          Give a short description of today's development activity.
+
+          COMPLETED_TODAY:
+          List only work supported by recent commits.
+
+          IN_PROGRESS:
+          List relevant tasks from PROJECT_STATUS.md.
+
+          NEXT_TASK:
+          Recommend ONE task from the Remaining section.
+
+          SUMMARY:
+          Give a short useful summary of today's progress.
           """
 
-          request_data = {
+          request_body = {
               "contents": [
                   {
                       "parts": [
@@ -138,55 +332,582 @@ jobs:
           url = (
               "https://generativelanguage.googleapis.com/"
               "v1beta/models/gemini-2.5-flash:generateContent"
-              "?key=" + os.environ["GEMINI_API_KEY"]
+              "?key="
+              + api_key
           )
 
           request = urllib.request.Request(
               url,
-              data=json.dumps(request_data).encode("utf-8"),
+              data=json.dumps(
+                  request_body
+              ).encode("utf-8"),
               headers={
                   "Content-Type": "application/json"
               },
               method="POST"
           )
 
-          with urllib.request.urlopen(request) as response:
-              result = json.loads(
-                  response.read().decode("utf-8")
+          try:
+
+              with urllib.request.urlopen(
+                  request,
+                  timeout=60
+              ) as response:
+
+                  response_data = response.read().decode(
+                      "utf-8"
+                  )
+
+          except urllib.error.HTTPError as error:
+
+              error_body = error.read().decode(
+                  "utf-8",
+                  errors="replace"
               )
 
-          report = result["candidates"][0]["content"]["parts"][0]["text"]
+              print(
+                  "Gemini API error:"
+              )
 
-          with open("summary.txt", "w", encoding="utf-8") as file:
-              file.write(report)
+              print(error_body)
 
+              raise
+
+          result = json.loads(
+              response_data
+          )
+
+          try:
+
+              report = (
+                  result["candidates"][0]
+                  ["content"]["parts"][0]
+                  ["text"]
+              )
+
+          except (
+              KeyError,
+              IndexError,
+              TypeError
+          ):
+
+              print("Unexpected Gemini response:")
+              print(json.dumps(result, indent=2))
+
+              raise RuntimeError(
+                  "Could not extract Gemini response."
+              )
+
+          with open(
+              "ai_report.txt",
+              "w",
+              encoding="utf-8"
+          ) as file:
+
+              file.write(report.strip())
+
+          print("Gemini analysis completed.")
           print(report)
           PY
 
-      # 4. Send the AI report to Telegram
+
+      # ==========================================
+      # 7. Build Telegram report
+      # ==========================================
+      - name: Build Telegram report
+        shell: bash
+        env:
+          INDIA_DATE: ${{ env.INDIA_DATE }}
+          INDIA_TIME: ${{ env.INDIA_TIME }}
+        run: |
+
+          python3 <<'PY'
+          import os
+          import re
+
+          # ------------------------------------------
+          # Read progress
+          # ------------------------------------------
+
+          progress = {}
+
+          with open(
+              "progress.txt",
+              "r",
+              encoding="utf-8"
+          ) as file:
+
+              for line in file:
+
+                  line = line.strip()
+
+                  if "=" in line:
+
+                      key, value = line.split(
+                          "=",
+                          1
+                      )
+
+                      progress[key] = value
+
+
+          completed = progress.get(
+              "COMPLETED",
+              "0"
+          )
+
+          in_progress = progress.get(
+              "IN_PROGRESS",
+              "0"
+          )
+
+          remaining = progress.get(
+              "REMAINING",
+              "0"
+          )
+
+          percentage = progress.get(
+              "PERCENTAGE",
+              "0"
+          )
+
+          progress_bar = progress.get(
+              "PROGRESS_BAR",
+              "░" * 20
+          )
+
+
+          # ------------------------------------------
+          # Read Gemini report
+          # ------------------------------------------
+
+          with open(
+              "ai_report.txt",
+              "r",
+              encoding="utf-8"
+          ) as file:
+
+              ai_report = file.read().strip()
+
+
+          # ------------------------------------------
+          # Extract AI sections
+          # ------------------------------------------
+
+          def extract_section(
+              name,
+              following_sections
+          ):
+
+              if following_sections:
+
+                  lookahead = "|".join(
+                      re.escape(
+                          section
+                      )
+                      for section
+                      in following_sections
+                  )
+
+                  pattern = (
+                      r""
+                      + re.escape(name)
+                      + r"\s*:\s*"
+                      + r"(.*?)"
+                      + r"(?="
+                      + lookahead
+                      + r"\s*:|$)"
+                  )
+
+              else:
+
+                  pattern = (
+                      r""
+                      + re.escape(name)
+                      + r"\s*:\s*"
+                      + r"(.*)$"
+                  )
+
+              match = re.search(
+                  pattern,
+                  ai_report,
+                  re.DOTALL
+              )
+
+              if match:
+
+                  result = match.group(1).strip()
+
+                  if result:
+
+                      return result
+
+              return "No information available."
+
+
+          today_activity = extract_section(
+              "TODAY_ACTIVITY",
+              [
+                  "COMPLETED_TODAY",
+                  "IN_PROGRESS",
+                  "NEXT_TASK",
+                  "SUMMARY"
+              ]
+          )
+
+
+          completed_today = extract_section(
+              "COMPLETED_TODAY",
+              [
+                  "IN_PROGRESS",
+                  "NEXT_TASK",
+                  "SUMMARY"
+              ]
+          )
+
+
+          current_progress = extract_section(
+              "IN_PROGRESS",
+              [
+                  "NEXT_TASK",
+                  "SUMMARY"
+              ]
+          )
+
+
+          next_task = extract_section(
+              "NEXT_TASK",
+              [
+                  "SUMMARY"
+              ]
+          )
+
+
+          summary = extract_section(
+              "SUMMARY",
+              []
+          )
+
+
+          # ------------------------------------------
+          # Clean AI output
+          # ------------------------------------------
+
+          def clean_text(text):
+
+              text = text.strip()
+
+              text = re.sub(
+                  r"^\s*[-*]\s+",
+                  "• ",
+                  text,
+                  flags=re.MULTILINE
+              )
+
+              return text
+
+
+          today_activity = clean_text(
+              today_activity
+          )
+
+          completed_today = clean_text(
+              completed_today
+          )
+
+          current_progress = clean_text(
+              current_progress
+          )
+
+          next_task = clean_text(
+              next_task
+          )
+
+          summary = clean_text(
+              summary
+          )
+
+
+          # ------------------------------------------
+          # Build Telegram message
+          # ------------------------------------------
+
+          lines = []
+
+          lines.append(
+              "🚰 JALANIDHI DAILY REPORT"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "📅 "
+              + os.environ["INDIA_DATE"]
+          )
+
+          lines.append(
+              "🕐 "
+              + os.environ["INDIA_TIME"]
+          )
+
+          lines.append("")
+
+          lines.append(
+              "━━━━━━━━━━━━━━━━━━━━"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "📊 PROJECT PROGRESS"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "🟢 Overall Progress: "
+              + percentage
+              + "%"
+          )
+
+          lines.append("")
+
+          lines.append(
+              progress_bar
+              + " "
+              + percentage
+              + "%"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "📋 TASK STATUS"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "✅ Completed: "
+              + completed
+          )
+
+          lines.append(
+              "🔄 In Progress: "
+              + in_progress
+          )
+
+          lines.append(
+              "⬜ Remaining: "
+              + remaining
+          )
+
+          lines.append("")
+
+          lines.append(
+              "━━━━━━━━━━━━━━━━━━━━"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "📈 TODAY'S ACTIVITY"
+          )
+
+          lines.append("")
+
+          lines.append(
+              today_activity
+          )
+
+          lines.append("")
+
+          lines.append(
+              "━━━━━━━━━━━━━━━━━━━━"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "✅ COMPLETED TODAY"
+          )
+
+          lines.append("")
+
+          lines.append(
+              completed_today
+          )
+
+          lines.append("")
+
+          lines.append(
+              "━━━━━━━━━━━━━━━━━━━━"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "🔄 IN PROGRESS"
+          )
+
+          lines.append("")
+
+          lines.append(
+              current_progress
+          )
+
+          lines.append("")
+
+          lines.append(
+              "━━━━━━━━━━━━━━━━━━━━"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "🎯 NEXT BEST TASK"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "👉 "
+              + next_task
+          )
+
+          lines.append("")
+
+          lines.append(
+              "━━━━━━━━━━━━━━━━━━━━"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "🤖 AI SUMMARY"
+          )
+
+          lines.append("")
+
+          lines.append(
+              summary
+          )
+
+          lines.append("")
+
+          lines.append(
+              "━━━━━━━━━━━━━━━━━━━━"
+          )
+
+          lines.append("")
+
+          lines.append(
+              "🚀 Keep building Jalanidhi!"
+          )
+
+
+          message = "\n".join(lines)
+
+
+          # ------------------------------------------
+          # Telegram maximum message safety
+          # ------------------------------------------
+
+          if len(message) > 3900:
+
+              message = (
+                  message[:3900]
+                  + "\n\n"
+                  + "⚠️ Report shortened."
+              )
+
+
+          # ------------------------------------------
+          # Save Telegram message
+          # ------------------------------------------
+
+          with open(
+              "telegram_message.txt",
+              "w",
+              encoding="utf-8"
+          ) as file:
+
+              file.write(message)
+
+
+          print("")
+          print(
+              "================ TELEGRAM REPORT ================"
+          )
+          print("")
+          print(message)
+          print("")
+          print(
+              "=================================================="
+          )
+          PY
+
+
+      # ==========================================
+      # 8. Send report to Telegram
+      # ==========================================
       - name: Send report to Telegram
+        shell: bash
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python <<'PY'
+
+          python3 <<'PY'
           import os
           import urllib.request
           import urllib.parse
+          import json
+          import urllib.error
 
-          with open("summary.txt", "r", encoding="utf-8") as file:
+          bot_token = os.environ.get(
+              "TELEGRAM_BOT_TOKEN"
+          )
+
+          chat_id = os.environ.get(
+              "TELEGRAM_CHAT_ID"
+          )
+
+          if not bot_token:
+
+              raise RuntimeError(
+                  "TELEGRAM_BOT_TOKEN secret is missing."
+              )
+
+          if not chat_id:
+
+              raise RuntimeError(
+                  "TELEGRAM_CHAT_ID secret is missing."
+              )
+
+          with open(
+              "telegram_message.txt",
+              "r",
+              encoding="utf-8"
+          ) as file:
+
               message = file.read()
+
 
           url = (
               "https://api.telegram.org/bot"
-              + os.environ["TELEGRAM_BOT_TOKEN"]
+              + bot_token
               + "/sendMessage"
           )
 
-          data = urllib.parse.urlencode({
-              "chat_id": os.environ["TELEGRAM_CHAT_ID"],
-              "text": message
-          }).encode("utf-8")
+
+          data = urllib.parse.urlencode(
+              {
+                  "chat_id": chat_id,
+                  "text": message
+              }
+          ).encode("utf-8")
+
 
           request = urllib.request.Request(
               url,
@@ -194,10 +915,48 @@ jobs:
               method="POST"
           )
 
-          with urllib.request.urlopen(request) as response:
-              result = response.read().decode("utf-8")
 
-          print("Telegram response:")
-          print(result)
-          print("Telegram report sent successfully.")
+          try:
+
+              with urllib.request.urlopen(
+                  request,
+                  timeout=30
+              ) as response:
+
+                  response_text = (
+                      response.read()
+                      .decode("utf-8")
+                  )
+
+          except urllib.error.HTTPError as error:
+
+              error_body = error.read().decode(
+                  "utf-8",
+                  errors="replace"
+              )
+
+              print(
+                  "Telegram API error:"
+              )
+
+              print(error_body)
+
+              raise
+
+
+          result = json.loads(
+              response_text
+          )
+
+
+          if not result.get("ok"):
+
+              raise RuntimeError(
+                  "Telegram rejected the message."
+              )
+
+
+          print(
+              "✅ Telegram report sent successfully."
+          )
           PY
