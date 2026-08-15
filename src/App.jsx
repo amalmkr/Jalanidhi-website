@@ -9,10 +9,12 @@ import Payment from './pages/payment';
 import PaymentSucceess from './pages/PaymentSuccess';
 import PaymentHistory from './pages/PaymentHistory';
 import Complaint from './pages/Complaint';
-import Announcement from './pages/Announcement';
-import Help from './pages/Help';
-import ScrollToTop from './components/ScrollToTop';
 import Announcemnt from './pages/Announcement';
+import Help from './pages/Help';
+import WaterTime from './pages/WaterTime';
+import NewConnection from './pages/NewConnection';
+import CheckConnection from './pages/CheckConnection';
+import ScrollToTop from './components/ScrollToTop';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 
@@ -32,10 +34,12 @@ function App() {
       <Route path='/payment' element={<Payment/>}/>
       <Route path='/payment-success' element={<PaymentSucceess/>}/>
       <Route path='/payment-history' element={<PaymentHistory/>}/>
-      <Route path='/announcement' element={<Announcement/>}/>
       <Route path='/help' element={<Help/>}/>
       <Route path='/complaint' element={<Complaint/>}/>
       <Route path='/announcement' element={<Announcemnt/>}/>
+      <Route path='/new-connection' element={<NewConnection/>}/>
+      <Route path='/check-connection' element={<CheckConnection/>}/>
+      <Route path='/water-time' element={<WaterTime/>}/>
     </Routes>
     <Footer/>
     </BrowserRouter>

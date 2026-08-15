@@ -29,16 +29,19 @@ function Services() {
       icon: <FaTint />,
       title: "പുതിയ കണക്ഷന് അപേക്ഷിക്കുക",
       description: "പുതിയ ജല കണക്ഷനായി ഓൺലൈനായി അപേക്ഷിക്കാം.",
+      link:"new-connection"
     },
     {
       icon: <FaSearchLocation />,
       title: "കണക്ഷൻ നില പരിശോധിക്കുക",
       description: "നിങ്ങളുടെ അപേക്ഷയുടെ നിലവിലെ സ്ഥിതി അറിയാം.",
+      link:"check-connection"
     },
     {
       icon: <FaClock />,
       title: "ജല വിതരണം സമയം",
       description: "നിങ്ങളുടെ പ്രദേശത്തെ ജല വിതരണ സമയം അറിയാം.",
+      link:"water-time"
     },
     {
       icon: <FaHeadset />,
