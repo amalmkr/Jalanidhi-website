@@ -1,6 +1,17 @@
-name: Jalanidhi Daily Project Analysis
+name: Jalanidhi Project AI Monitor
 
 on:
+  push:
+    branches:
+      - main
+
+  schedule:
+    # 9:00 AM IST
+    - cron: "30 3 * * *"
+
+    # 11:00 PM IST
+    - cron: "30 17 * * *"
+
   workflow_dispatch:
 
 permissions:
