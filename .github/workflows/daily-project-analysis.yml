@@ -1,0 +1,203 @@
+name: Daily Project Analysis
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  analyze-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Download the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Collect recent project activity
+      - name: Collect project activity
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "=== COMMITS FROM LAST 24 HOURS ===" > project_data.txt
+
+          git log \
+            --since="24 hours ago" \
+            --pretty=format:"Commit: %h%nAuthor: %an%nDate: %ad%nMessage: %s%n" \
+            --date=short >> project_data.txt
+
+          echo "" >> project_data.txt
+          echo "=== FILE CHANGES FROM LAST 24 HOURS ===" >> project_data.txt
+
+          git log \
+            --since="24 hours ago" \
+            --stat \
+            --pretty=format:"" >> project_data.txt
+
+          echo "" >> project_data.txt
+          echo "=== RECENT GITHUB ISSUES ===" >> project_data.txt
+
+          gh issue list \
+            --state all \
+            --limit 20 \
+            --json number,title,state,labels,updatedAt \
+            >> project_data.txt
+
+          echo "" >> project_data.txt
+          echo "=== CURRENT PROJECT FILES ===" >> project_data.txt
+
+          find . \
+            -type f \
+            -not -path "./.git/*" \
+            -not -path "./node_modules/*" \
+            -not -path "./.github/*" \
+            | sort \
+            | head -300 >> project_data.txt
+
+      # 3. Ask Gemini to analyze the project
+      - name: Analyze project with Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python <<'PY'
+          import os
+          import json
+          import urllib.request
+
+          with open("project_data.txt", "r", encoding="utf-8") as file:
+              project_data = file.read()
+
+          prompt = f"""
+          You are a software project progress analyst.
+
+          Analyze this GitHub repository and determine the developer's
+          project progress during the last 24 hours.
+
+          The project is a React frontend project called Jalanidhi.
+
+          Your tasks:
+
+          1. Identify work that was actually completed.
+          2. Identify work that appears to be in progress.
+          3. Identify important remaining tasks.
+          4. Recommend the most useful next task.
+
+          IMPORTANT RULES:
+
+          - Do NOT invent completed work.
+          - Only call something completed when there is evidence.
+          - Use commits, changed files and GitHub issues as evidence.
+          - If there were no commits in the last 24 hours, clearly say so.
+          - Do not assume that an existing file means its functionality is complete.
+          - Focus especially on React pages, components, UI, state,
+            navigation, forms and user flows.
+          - Keep the report easy to read on Telegram.
+
+          Return exactly this structure:
+
+          📊 JALANIDHI DAILY PROJECT REPORT
+
+          📅 Date: [today's date]
+
+          ✅ COMPLETED TODAY
+          - ...
+
+          🔄 IN PROGRESS
+          - ...
+
+          ⬜ REMAINING TASKS
+          - ...
+
+          🎯 RECOMMENDED NEXT TASK
+          - ...
+
+          📝 SUMMARY
+          ...
+
+          Here is the repository information:
+
+          {project_data}
+          """
+
+          request_data = {
+              "contents": [
+                  {
+                      "parts": [
+                          {
+                              "text": prompt
+                          }
+                      ]
+                  }
+              ]
+          }
+
+          url = (
+              "https://generativelanguage.googleapis.com/"
+              "v1beta/models/gemini-2.5-flash:generateContent"
+              "?key=" + os.environ["GEMINI_API_KEY"]
+          )
+
+          request = urllib.request.Request(
+              url,
+              data=json.dumps(request_data).encode("utf-8"),
+              headers={
+                  "Content-Type": "application/json"
+              },
+              method="POST"
+          )
+
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(
+                  response.read().decode("utf-8")
+              )
+
+          report = result["candidates"][0]["content"]["parts"][0]["text"]
+
+          with open("summary.txt", "w", encoding="utf-8") as file:
+              file.write(report)
+
+          print(report)
+          PY
+
+      # 4. Send the AI report to Telegram
+      - name: Send report to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python <<'PY'
+          import os
+          import urllib.request
+          import urllib.parse
+
+          with open("summary.txt", "r", encoding="utf-8") as file:
+              message = file.read()
+
+          url = (
+              "https://api.telegram.org/bot"
+              + os.environ["TELEGRAM_BOT_TOKEN"]
+              + "/sendMessage"
+          )
+
+          data = urllib.parse.urlencode({
+              "chat_id": os.environ["TELEGRAM_CHAT_ID"],
+              "text": message
+          }).encode("utf-8")
+
+          request = urllib.request.Request(
+              url,
+              data=data,
+              method="POST"
+          )
+
+          with urllib.request.urlopen(request) as response:
+              result = response.read().decode("utf-8")
+
+          print("Telegram response:")
+          print(result)
+          print("Telegram report sent successfully.")
+          PY
