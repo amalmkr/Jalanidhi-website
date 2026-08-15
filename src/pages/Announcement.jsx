@@ -1,5 +1,8 @@
 import AnnouncePic from '../assets/images/announcement.jpeg';
+import { FaPhone } from "react-icons/fa6";
+import { FaCircleInfo } from "react-icons/fa6";
 import { GrAnnounce } from "react-icons/gr";
+import { TfiEmail } from "react-icons/tfi";
 
 function Announcemnt() {
     const announcement = [
@@ -58,10 +61,10 @@ function Announcemnt() {
             {/* Announcements */}
             <section className="bg-gradient-to-b from-blue-50 to-white pt-5 pb-16">
 
-                <div className='flex gap-5 justify-center items-center'>
-                    <span className='text-5xl text-blue-800 '><GrAnnounce/></span>
+                <div className='flex gap-2 md:gap-5  md:justify-center items-center mt-5'>
+                    <span className='text-5xl ml-5 text-blue-800 '><GrAnnounce/></span>
 
-                    <h2 className="text-center text-2xl md:text-4xl font-extrabold text-blue-800">
+                    <h2 className="text-center text-2xl md:text-4xl  font-extrabold text-blue-800">
                         ഏറ്റവും പുതിയ അറിയിപ്പുകൾ 
                     </h2>
                 </div>
@@ -137,6 +140,39 @@ function Announcemnt() {
 
                         </div>
                     ))}
+
+                </div>
+
+                <div className='flex flex-col md:flex-row justify-between items-center gap-8 mt-10 mx-5 md:mx-15 bg-blue-500/15 p-6 md:p-8 rounded-2xl shadow-lg hover:-translate-y-3 transition-all duration-300 hover:shadow-2xl'>
+
+                    {/* Information */}
+                    <div className='flex gap-5 justify-center items-center text-center md:text-left'>
+                        <FaCircleInfo className='text-4xl md:text-5xl text-blue-500 shrink-0' />
+
+                        <p className='text-blue-800 font-bold'>
+                            കൂടുതൽ വിവരങ്ങൾക്ക് ഞങ്ങളെ ബന്ധപ്പെടുക
+                        </p>
+                    </div>
+
+
+                    {/* Phone */}
+                    <div className='flex gap-5 justify-center items-center'>
+                        <FaPhone className='text-blue-500 text-xl md:text-4xl' />
+
+                        <p className='text-blue-800 text-lg md:text-xl font-bold'>
+                            9088585778
+                        </p>
+                    </div>
+
+
+                    {/* Email */}
+                    <div className='flex justify-center items-center gap-5'>
+                        <TfiEmail className='text-3xl md:text-4xl text-blue-500' />
+
+                        <p className='text-blue-800 text-lg md:text-xl font-bold'>
+                            info@gmail.com
+                        </p>
+                    </div>
 
                 </div>
 
