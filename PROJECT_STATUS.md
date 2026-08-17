@@ -26,8 +26,6 @@
 
 ## In Progress
 
-- Improving Help page
-- Improving Announcement page
 - Completing frontend user flows
 - Improving frontend validation and user experience
 
@@ -88,8 +86,8 @@
 2. [ ] Connection Status
 3. [x] Water Distribution Time
 4. [ ] Improve Complaint functionality
-5. [ ] Improve Help page
-6. [ ] Improve Announcement page
+5. [x] Improve Help page
+6. [x] Improve Announcement page
 
 ## Priority 2 — Frontend Quality
 
