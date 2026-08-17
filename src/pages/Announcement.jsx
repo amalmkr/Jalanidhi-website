@@ -143,7 +143,7 @@ function Announcemnt() {
 
                 </div>
 
-                <div className='flex flex-col md:flex-row justify-between items-center gap-8 mt-10 mx-5 md:mx-15 bg-blue-500/15 p-6 md:p-8 rounded-2xl shadow-lg hover:-translate-y-3 transition-all duration-300 hover:shadow-2xl'>
+                <div className='flex flex-col md:flex-row justify-between items-center gap-8 mt-10 mx-5 border-l-4 border-blue-500 md:mx-15 bg-blue-500/15 p-6 md:p-8 rounded-2xl shadow-lg hover:-translate-y-3 transition-all duration-300 hover:shadow-2xl'>
 
                     {/* Information */}
                     <div className='flex gap-5 justify-center items-center text-center md:text-left'>
@@ -156,7 +156,7 @@ function Announcemnt() {
 
 
                     {/* Phone */}
-                    <div className='flex gap-5 justify-center items-center'>
+                    <div className='flex gap-5 justify-center items-center '>
                         <FaPhone className='text-blue-500 text-xl md:text-4xl' />
 
                         <p className='text-blue-800 text-lg md:text-xl font-bold'>
