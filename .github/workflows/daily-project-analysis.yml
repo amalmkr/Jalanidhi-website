@@ -123,6 +123,110 @@ jobs:
           echo "Repository metadata collected."
 
       # ==========================================
+      # 5b. Scan backend directories (if they exist)
+      # ==========================================
+      - name: Scan backend code (if present)
+        shell: bash
+        run: |
+          echo "===== BACKEND SCAN =====" >> repo_meta.txt
+
+          # Check common backend directory names
+          BACKEND_DIR=""
+          for dir in backend server api src/backend src/server src/api app; do
+            if [ -d "$dir" ]; then
+              BACKEND_DIR="$dir"
+              echo "BACKEND_DIR_FOUND: $dir" >> repo_meta.txt
+              break
+            fi
+          done
+
+          if [ -z "$BACKEND_DIR" ]; then
+            echo "BACKEND: Not started — no backend directory found in repository." >> repo_meta.txt
+          else
+            echo "BACKEND_DIR: $BACKEND_DIR" >> repo_meta.txt
+
+            # List all backend files
+            echo "===== BACKEND FILES =====" >> repo_meta.txt
+            find "$BACKEND_DIR" -type f | sort >> repo_meta.txt
+
+            # Detect backend tech stack from file extensions and filenames
+            echo "===== BACKEND TECH DETECTION =====" >> repo_meta.txt
+
+            # Node.js/Express
+            if find "$BACKEND_DIR" -name "*.js" -o -name "*.ts" | grep -q .; then
+              echo "JAVASCRIPT/TYPESCRIPT: Backend has JS/TS files" >> repo_meta.txt
+              if grep -rq "express" "$BACKEND_DIR" --include="*.js" --include="*.ts" 2>/dev/null; then
+                echo "EXPRESS: Express.js framework detected" >> repo_meta.txt
+              fi
+              if grep -rq "fastify\|fastify" "$BACKEND_DIR" --include="*.js" --include="*.ts" 2>/dev/null; then
+                echo "FASTIFY: Fastify framework detected" >> repo_meta.txt
+              fi
+              if grep -rq "next" "$BACKEND_DIR" --include="*.js" --include="*.ts" --include="*.json" 2>/dev/null; then
+                echo "NEXT_JS: Next.js backend detected" >> repo_meta.txt
+              fi
+            fi
+
+            # Python
+            if find "$BACKEND_DIR" -name "*.py" | grep -q .; then
+              echo "PYTHON: Backend has Python files" >> repo_meta.txt
+              if grep -rq "flask" "$BACKEND_DIR" --include="*.py" 2>/dev/null; then
+                echo "FLASK: Flask framework detected" >> repo_meta.txt
+              fi
+              if grep -rq "django\|django" "$BACKEND_DIR" --include="*.py" --include="*.txt" --include="*.cfg" 2>/dev/null; then
+                echo "DJANGO: Django framework detected" >> repo_meta.txt
+              fi
+              if grep -rq "fastapi\|fastapi" "$BACKEND_DIR" --include="*.py" 2>/dev/null; then
+                echo "FASTAPI: FastAPI framework detected" >> repo_meta.txt
+              fi
+            fi
+
+            # Database files
+            echo "===== DATABASE FILES =====" >> repo_meta.txt
+            if find "$BACKEND_DIR" -name "*.sql" | grep -q .; then
+              echo "SQL_FILES: SQL schema/migration files found" >> repo_meta.txt
+              find "$BACKEND_DIR" -name "*.sql" -exec echo "SQL: {}" \; >> repo_meta.txt
+            fi
+            if find "$BACKEND_DIR" -name "*.prisma" -o -name "schema.prisma" | grep -q .; then
+              echo "PRISMA: Prisma schema detected" >> repo_meta.txt
+            fi
+            if find "$BACKEND_DIR" -name "*.mongodb" -o -name "*.mongod" | grep -q .; then
+              echo "MONGODB: MongoDB config files found" >> repo_meta.txt
+            fi
+            if [ -f "$BACKEND_DIR/package.json" ]; then
+              echo "BACKEND_PACKAGE_JSON: $BACKEND_DIR/package.json exists" >> repo_meta.txt
+            fi
+
+            # API route detection
+            echo "===== API ENDPOINTS DETECTED =====" >> repo_meta.txt
+            if grep -rq "app\.get\|app\.post\|app\.put\|app\.delete\|router\.get\|router\.post" "$BACKEND_DIR" --include="*.js" --include="*.ts" --include="*.py" 2>/dev/null; then
+              grep -rn "app\.get\|app\.post\|app\.put\|app\.delete\|router\.get\|router\.post\|@app\.get\|@app\.post\|@router\.get\|@router\.post" "$BACKEND_DIR" --include="*.js" --include="*.ts" --include="*.py" 2>/dev/null | head -20 >> repo_meta.txt || true
+              echo "API_ROUTES_FOUND: Yes" >> repo_meta.txt
+            else
+              echo "API_ROUTES_FOUND: No explicit API routes detected yet." >> repo_meta.txt
+            fi
+
+            # Database connection detection
+            echo "===== DATABASE CONNECTIONS =====" >> repo_meta.txt
+            if grep -rq "mongoose\|mongodb\|pg\|postgres\|mysql\|prisma\|sequelize\|typeorm\|sqlite" "$BACKEND_DIR" --include="*.js" --include="*.ts" --include="*.py" 2>/dev/null; then
+              grep -rn "mongoose\|mongodb\|pg\|postgres\|mysql\|prisma\|sequelize\|typeorm\|sqlite" "$BACKEND_DIR" --include="*.js" --include="*.ts" --include="*.py" 2>/dev/null | head -10 >> repo_meta.txt || true
+              echo "DB_CONNECTIONS_FOUND: Yes" >> repo_meta.txt
+            else
+              echo "DB_CONNECTIONS_FOUND: No database connection code detected yet." >> repo_meta.txt
+            fi
+
+            # Environment / config detection
+            echo "===== CONFIG FILES =====" >> repo_meta.txt
+            if [ -f "$BACKEND_DIR/.env" ] || [ -f "$BACKEND_DIR/.env.example" ] || [ -f "$BACKEND_DIR/.env.local" ]; then
+              echo "ENV_FILES: Configuration files found in backend" >> repo_meta.txt
+            else
+              echo "ENV_FILES: No .env files found in backend directory" >> repo_meta.txt
+            fi
+          fi
+
+          echo ""
+          echo "Backend scan complete."
+
+      # ==========================================
       # 6. Check for placeholder pages (pages with minimal content)
       # ==========================================
       - name: Detect placeholder and incomplete pages
@@ -291,7 +395,7 @@ jobs:
 
           prompt = f"""
           You are a senior software engineering mentor analyzing a beginner's first project.
-          The developer is learning React and building their first full web application.
+          The developer is learning full-stack web development and building their first web application.
 
           PROJECT: Jalanidhi Water Authority Website
           DATE: {today}
@@ -300,9 +404,11 @@ jobs:
 
           IMPORTANT INSTRUCTIONS FOR YOUR ANALYSIS:
 
-          1. READ THE CODE, NOT JUST CHECKBOXES. The repo_meta.txt contains actual file listings,
-             empty-file detections, placeholder detections, localStorage usage, routes defined,
-             form alert-only detections, and package.json dependencies.
+          1. READ THE CODE, NOT JUST CHECKBOXES. The repo_meta.txt contains:
+             - Frontend file listings (src/), placeholder detections, alert-only form detections,
+               localStorage usage, routes defined, package.json dependencies
+             - Backend scan results (if a backend directory exists): file list, framework detection,
+               API routes, database connection code, config files
              Use this real data to tell the developer what's actually built vs what's not.
 
           2. The git_activity.txt shows real commits and files touched in the last 7 and 30 days.
@@ -314,16 +420,28 @@ jobs:
           4. NEVER invent work that wasn't done. If a file is flagged as PLACEHOLDER_LIKELY or
              ALERT_ONLY_FORM, say so clearly.
 
-          5. Focus on the FRONTEND first since that's what's being built now. Backend is not started.
+          5. ANALYZE BOTH FRONTEND AND BACKEND — but adapt to what exists:
+             - If backend directory exists: analyze it alongside the frontend. Check if API routes
+               connect to the frontend, if database is set up, if real data flows.
+             - If no backend directory exists: clearly state "Backend has not been started" and
+               explain what that means for the project (no real data, no API, no database, no auth).
+               Do NOT treat this as a minor gap — it's the biggest missing piece.
 
-          6. Give ONE clear next task, not a list. The developer is a beginner and gets overwhelmed.
+          6. When backend is missing, the "WHAT'S ACTUALLY BUILT" section should clearly separate
+             "frontend features (UI + localStorage)" from "real production features (API + database)".
+             localStorage is NOT a database. Hardcoded data is NOT real data.
 
-          7. Highlight good practices you see (e.g., good component structure, proper routing, good UI).
+          7. Give ONE clear next task, not a list. The developer is a beginner and gets overwhelmed.
+             If frontend has unfinished pages, prioritize those. If frontend is complete, recommend
+             starting backend.
+
+          8. Highlight good practices you see (e.g., good component structure, proper routing, good UI,
+             clean code patterns).
 
           PROJECT PROGRESS (from PROJECT_STATUS.md):
           {progress_raw}
 
-          REPOSITORY METADATA (file list, empty files, placeholders, localStorage usage, routes, packages):
+          REPOSITORY METADATA — FRONTEND (file list, empty files, placeholders, localStorage, routes, packages):
           {repo_meta}
 
           GIT ACTIVITY (commits and files changed in last 7 and 30 days):
@@ -333,23 +451,33 @@ jobs:
 
           ## WHAT YOU BUILT WELL
           List 3-5 things the developer did well. Be specific — mention actual pages,
-          components, or patterns you see in the data. This is a beginner — acknowledge the wins.
+          components, patterns, or backend work you see in the data. This is a beginner — acknowledge the wins.
 
           ## WHAT'S ACTUALLY BUILT (code-level)
           Break down what's real vs placeholder based on the file analysis data.
-          Mention specific files and what state they're in (complete, partial, empty, alert-only, etc.)
+          - For frontend: mention specific files and what state they're in (complete, partial, empty, alert-only, etc.)
+          - For backend: if it exists, describe what's built (framework, API routes, database, models).
+            If it doesn't exist, clearly state "Backend: NOT STARTED" and what that means.
 
           ## WHAT'S MISSING / NOT STARTED
-          List the gaps you find from the data. Group them logically (frontend gaps, backend, etc.)
+          List the gaps you find from the data. Group them logically:
+          - Frontend gaps (pages not built, forms not functional, missing validation, etc.)
+          - Backend gaps (no server, no API, no database, no auth — or specific missing pieces if backend exists)
+          - Data gaps (hardcoded vs real data)
+          - Production gaps (testing, security, deployment — if applicable)
 
           ## YOUR NEXT TASK (ONE task only)
           Recommend the single most important next task. Explain WHY this task,
           what files to touch, what to build, and what skills it teaches.
           Make it beginner-friendly with concrete steps.
+          - If frontend has unfinished pages: pick the most important one.
+          - If frontend is complete but backend is empty: recommend starting the backend.
+          - If both are in progress: recommend whichever unblocks more value.
 
           ## SKILLS YOU'RE BUILDING
           List 3-5 skills the developer is gaining from this project so far,
-          and 2-3 skills the next task will teach.
+          and 2-3 skills the next task will teach. Include both frontend and backend skills
+          when relevant.
 
           ## PROGRESS NOTE
           A brief note on overall progress. Mention the percentage from PROJECT_STATUS.md
@@ -433,35 +561,78 @@ jobs:
               ai_report = f.read().strip()
 
           # ---- Extract sections from AI report ----
+          # Gemini outputs markdown headers like "## WHAT YOU BUILT WELL"
+          # or plain text like "WHAT YOU BUILT WELL:". Handle both.
+
+          def normalize(text):
+              """Strip markdown headers and clean up for matching."""
+              text = re.sub(r"^##+\s*", "", text, flags=re.MULTILINE)
+              return text
+
           def extract(name, following=None):
+              norm_report = normalize(ai_report)
+              search_name = re.escape(name)
+
               if following:
                   lookahead = "|".join(re.escape(s) for s in following)
                   pattern = (
-                      re.escape(name) + r"\s*:\s*" +
+                      search_name + r"\s*[:\-]?\s*" +
                       r"(.*?)" +
-                      r"(?=" + lookahead + r"\s*:|$)"
+                      r"(?=" + lookahead + r"\s*[:\-]?\s*|$)"
                   )
               else:
-                  pattern = re.escape(name) + r"\s*:\s*" + r"(.*)$"
-              m = re.search(pattern, ai_report, re.DOTALL)
+                  pattern = search_name + r"\s*[:\-]?\s*" + r"(.*)$"
+
+              m = re.search(pattern, norm_report, re.DOTALL)
               if m and m.group(1).strip():
                   return m.group(1).strip()
-              return "No information."
+              return None
 
           # Try multiple section name formats
           def extract_flexible(name_candidates, following=None):
               for name in name_candidates:
                   result = extract(name, following)
-                  if result and result != "No information.":
+                  if result:
                       return result
-              return "No information."
+              return "No information available."
 
           built_well       = extract_flexible(["WHAT YOU BUILT WELL", "WHAT YOU BUILT WELL:"])
-          actually_built   = extract_flexible(["WHAT'S ACTUALLY BUILT", "WHAT'S ACTUALLY BUILT (CODE-LEVEL)"])
-          missing          = extract_flexible(["WHAT'S MISSING", "WHAT'S MISSING / NOT STARTED"])
-          next_task        = extract_flexible(["YOUR NEXT TASK", "NEXT_TASK", "NEXT TASK"])
-          skills           = extract_flexible(["SKILLS YOU'RE BUILDING", "SKILLS"])
-          progress_note    = extract_flexible(["PROGRESS NOTE"])
+          actually_built   = extract_flexible(["WHAT'S ACTUALLY BUILT", "WHAT'S ACTUALLY BUILT (CODE-LEVEL)", "WHAT'S ACTUALLY BUILT (CODE LEVEL)"])
+          missing          = extract_flexible(["WHAT'S MISSING", "WHAT'S MISSING / NOT STARTED", "WHAT'S MISSING/NOT STARTED"])
+          next_task        = extract_flexible(["YOUR NEXT TASK", "NEXT_TASK", "NEXT TASK", "YOUR NEXT TASK (ONE TASK ONLY)"])
+          skills           = extract_flexible(["SKILLS YOU'RE BUILDING", "SKILLS", "SKILLS YOU'RE BUILDING:"])
+          progress_note    = extract_flexible(["PROGRESS NOTE", "PROGRESS NOTE:"])
+
+          # Fallback: if still no info, try raw regex on original report
+          if built_well == "No information available.":
+              m = re.search(r"##\s*WHAT\s+YOU\s+BUILT\s+WELL\s*\n(.*?)(?=##|\Z)", ai_report, re.DOTALL | re.IGNORECASE)
+              if m and m.group(1).strip():
+                  built_well = m.group(1).strip()
+
+          if actually_built == "No information available.":
+              m = re.search(r"##\s*WHAT'S?\s+ACTUALLY\s+BUILT.*?\n(.*?)(?=##|\Z)", ai_report, re.DOTALL | re.IGNORECASE)
+              if m and m.group(1).strip():
+                  actually_built = m.group(1).strip()
+
+          if missing == "No information available.":
+              m = re.search(r"##\s*WHAT'S?\s+MISSING.*?\n(.*?)(?=##|\Z)", ai_report, re.DOTALL | re.IGNORECASE)
+              if m and m.group(1).strip():
+                  missing = m.group(1).strip()
+
+          if next_task == "No information available.":
+              m = re.search(r"##\s*YOUR\s+NEXT\s+TASK.*?\n(.*?)(?=##|\Z)", ai_report, re.DOTALL | re.IGNORECASE)
+              if m and m.group(1).strip():
+                  next_task = m.group(1).strip()
+
+          if skills == "No information available.":
+              m = re.search(r"##\s*SKILLS.*?\n(.*?)(?=##|\Z)", ai_report, re.DOTALL | re.IGNORECASE)
+              if m and m.group(1).strip():
+                  skills = m.group(1).strip()
+
+          if progress_note == "No information available.":
+              m = re.search(r"##\s*PROGRESS\s+NOTE.*?\n(.*?)(?=##|\Z)", ai_report, re.DOTALL | re.IGNORECASE)
+              if m and m.group(1).strip():
+                  progress_note = m.group(1).strip()
 
           # ---- Clean formatting ----
           def clean(text):
