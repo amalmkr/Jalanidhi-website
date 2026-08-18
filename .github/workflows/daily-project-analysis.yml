@@ -1,64 +1,162 @@
-name: Jalanidhi Project AI Monitor
+name: Jalanidhi AI Project Analyzer
+
+# Triggers:
+# 1. Every push to main
+# 2. Daily at 9:00 AM IST (code scan + report)
+# 3. Manual trigger (force a scan anytime)
 
 on:
   push:
     branches:
       - main
-
   schedule:
-    # 9:00 AM IST
+    # 9:00 AM IST (3:30 UTC)
     - cron: "30 3 * * *"
 
-    # 11:00 PM IST
+    # 11:00 PM IST (17:30 UTC)
     - cron: "30 17 * * *"
-
   workflow_dispatch:
 
 permissions:
   contents: read
   issues: read
+  pull-requests: read
 
 jobs:
-  daily-analysis:
+  analyze:
     runs-on: ubuntu-latest
 
     steps:
-
       # ==========================================
-      # 1. Checkout repository
+      # 1. Checkout repository (full history for git log)
       # ==========================================
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # ==========================================
+      # 2. Set up Node.js (to read package.json, check for libraries)
+      # ==========================================
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
       # ==========================================
-      # 2. Get India date and time
+      # 3. Get India date/time for reports
       # ==========================================
       - name: Get India date and time
         shell: bash
         run: |
-          echo "INDIA_DATE=$(TZ=Asia/Kolkata date '+%B %d, %Y')" >> "$GITHUB_ENV"
+          echo "INDIA_DATE=$(TZ=Asia/Kolkata date '+%B %d, %Y (%A)')" >> "$GITHUB_ENV"
           echo "INDIA_TIME=$(TZ=Asia/Kolkata date '+%I:%M %p')" >> "$GITHUB_ENV"
-
+          echo "INDIA_DAY=$(TZ=Asia/Kolkata date '+%A')" >> "$GITHUB_ENV"
 
       # ==========================================
-      # 3. Check PROJECT_STATUS.md
+      # 4. Verify PROJECT_STATUS.md exists
       # ==========================================
-      - name: Check project status file
+      - name: Verify project status file
         shell: bash
         run: |
           if [ ! -f "PROJECT_STATUS.md" ]; then
-            echo "ERROR: PROJECT_STATUS.md was not found."
+            echo "ERROR: PROJECT_STATUS.md not found."
             exit 1
           fi
-
           echo "PROJECT_STATUS.md found."
 
+      # ==========================================
+      # 5. Collect repository metadata (package.json, file listing)
+      # ==========================================
+      - name: Collect repository metadata
+        shell: bash
+        run: |
+          echo "===== PACKAGE.JSON =====" > repo_meta.txt
+          cat package.json >> repo_meta.txt 2>/dev/null || echo "No package.json" >> repo_meta.txt
+
+          echo "" >> repo_meta.txt
+          echo "===== SRC FILES =====" >> repo_meta.txt
+          find src -type f -name "*.jsx" -o -name "*.js" -o -name "*.css" | sort >> repo_meta.txt
+
+          echo "" >> repo_meta.txt
+          echo "===== EMPTY/FILLED FILE CHECK =====" >> repo_meta.txt
+          # List files that are very small (potential placeholders)
+          find src -type f \( -name "*.jsx" -o -name "*.js" \) -size -500c -exec echo "SMALL: {}" \; >> repo_meta.txt 2>/dev/null || true
+
+          echo "" >> repo_meta.txt
+          echo "===== PLACEHOLDER DETECTION =====" >> repo_meta.txt
+          # Detect files with placeholder content
+          for f in $(find src -type f \( -name "*.jsx" -o -name "*.js" \)); do
+            size=$(wc -c < "$f")
+            if [ "$size" -lt 200 ]; then
+              echo "PLACEHOLDER_LIKELY: $f ($size bytes)" >> repo_meta.txt
+            fi
+            # Check for alert-only submit handlers (no real logic)
+            if grep -q "alert(" "$f" && grep -q "onSubmit" "$f"; then
+              # Check if there's no useState or no data handling
+              if ! grep -q "useState" "$f" || ! grep -q "localStorage" "$f"; then
+                echo "ALERT_ONLY_FORM: $f (form submits with alert, no data handling)" >> repo_meta.txt
+              fi
+            fi
+          done
+
+          echo "" >> repo_meta.txt
+          echo "===== LOCALSTORAGE USAGE =====" >> repo_meta.txt
+          grep -rn "localStorage" src/ --include="*.jsx" --include="*.js" >> repo_meta.txt 2>/dev/null || echo "No localStorage usage found" >> repo_meta.txt
+
+          echo "" >> repo_meta.txt
+          echo "===== ROUTES DEFINED =====" >> repo_meta.txt
+          grep -n "Route path" src/App.jsx >> repo_meta.txt 2>/dev/null || echo "No routes found in App.jsx" >> repo_meta.txt
+
+          echo "" >> repo_meta.txt
+          echo "===== THIRD-PARTY LIBS =====" >> repo_meta.txt
+          # Extract dependencies from package.json
+          node -e "
+            const pkg = require('./package.json');
+            const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+            const keys = Object.keys(deps).sort();
+            keys.forEach(k => console.log(k + ': ' + deps[k]));
+          " >> repo_meta.txt 2>/dev/null || echo "Could not read package.json" >> repo_meta.txt
+
+          echo ""
+          echo "Repository metadata collected."
 
       # ==========================================
-      # 4. Calculate project progress
+      # 6. Check for placeholder pages (pages with minimal content)
+      # ==========================================
+      - name: Detect placeholder and incomplete pages
+        shell: bash
+        run: |
+          echo "===== PAGE ANALYSIS =====" >> repo_meta.txt
+
+          # Check each page file for actual content vs placeholder
+          for page in src/pages/*.jsx; do
+            [ -f "$page" ] || continue
+            filename=$(basename "$page")
+            size=$(wc -c < "$page")
+
+            # Count meaningful lines (non-empty, non-import, non-export)
+            meaningful=$(grep -c -v -E "^(import|export|\s*$|\/\/)" "$page" 2>/dev/null || echo 0)
+
+            echo "PAGE: $filename | size: ${size}bytes | meaningful_lines: ${meaningful}" >> repo_meta.txt
+
+            # Flag suspicious pages
+            if [ "$meaningful" -lt 5 ]; then
+              echo "  ⚠️  LOW_CONTENT: $filename has very little code ($meaningful meaningful lines)" >> repo_meta.txt
+            fi
+
+            # Check if it only renders static JSX (no useState, no logic)
+            if ! grep -q "useState\|useEffect\|useNavigate\|useLocation" "$page" 2>/dev/null; then
+              echo "  ℹ️  STATIC_PAGE: $filename has no React hooks (pure display page)" >> repo_meta.txt
+            fi
+          done
+
+          echo "" >> repo_meta.txt
+          echo "Page analysis complete."
+
+      # ==========================================
+      # 7. Calculate progress from PROJECT_STATUS.md
       # ==========================================
       - name: Calculate project progress
         shell: bash
@@ -66,809 +164,419 @@ jobs:
           python3 <<'PY'
           import re
 
-          with open("PROJECT_STATUS.md", "r", encoding="utf-8") as file:
-              content = file.read()
+          with open("PROJECT_STATUS.md", "r", encoding="utf-8") as f:
+              content = f.read()
 
-          def get_section(section_name, next_section_name=None):
-              if next_section_name:
-                  pattern = (
-                      r"## "
-                      + re.escape(section_name)
-                      + r"(.*?)(?=## "
-                      + re.escape(next_section_name)
-                      + r"|$)"
-                  )
-              else:
-                  pattern = (
-                      r"## "
-                      + re.escape(section_name)
-                      + r"(.*)$"
-                  )
+          # Count checked items [x] and [X]
+          checked = len(re.findall(r"\[x\]|[X]", content, re.IGNORECASE))
 
-              match = re.search(pattern, content, re.DOTALL)
+          # Count unchecked items [ ]
+          unchecked = len(re.findall(r"\[\s*\]", content))
 
-              if match:
-                  return match.group(1)
+          # Count 🟡 markers
+          in_progress = content.count("🟡")
 
-              return ""
-
-          completed_text = get_section(
-              "Completed",
-              "In Progress"
-          )
-
-          in_progress_text = get_section(
-              "In Progress",
-              "Remaining"
-          )
-
-          remaining_text = get_section(
-              "Remaining"
-          )
-
-          def count_tasks(text):
-              return len(
-                  re.findall(
-                      r"(?m)^\s*-\s+.+$",
-                      text
-                  )
-              )
-
-          completed = count_tasks(completed_text)
-          in_progress = count_tasks(in_progress_text)
-          remaining = count_tasks(remaining_text)
-
-          total = (
-              completed
-              + in_progress
-              + remaining
-          )
-
+          total = checked + unchecked + in_progress
           if total == 0:
               percentage = 0
           else:
-              percentage = round(
-                  (
-                      completed
-                      + (in_progress * 0.5)
-                  )
-                  / total
-                  * 100
-              )
+              percentage = round((checked + in_progress * 0.5) / total * 100)
 
-          percentage = max(
-              0,
-              min(100, percentage)
-          )
+          bar_len = 20
+          filled = round(percentage / 100 * bar_len)
+          bar = "█" * filled + "░" * (bar_len - filled)
 
-          bar_length = 20
+          with open("progress.txt", "w", encoding="utf-8") as f:
+              f.write(f"CHECKED={checked}\n")
+              f.write(f"UNCHECKED={unchecked}\n")
+              f.write(f"In_PROGRESS={in_progress}\n")
+              f.write(f"TOTAL={total}\n")
+              f.write(f"PERCENTAGE={percentage}\n")
+              f.write(f"BAR={bar}\n")
 
-          filled = round(
-              percentage
-              / 100
-              * bar_length
-          )
-
-          progress_bar = (
-              "█" * filled
-              + "░" * (bar_length - filled)
-          )
-
-          with open(
-              "progress.txt",
-              "w",
-              encoding="utf-8"
-          ) as file:
-
-              file.write(
-                  f"COMPLETED={completed}\n"
-                  f"IN_PROGRESS={in_progress}\n"
-                  f"REMAINING={remaining}\n"
-                  f"TOTAL={total}\n"
-                  f"PERCENTAGE={percentage}\n"
-                  f"PROGRESS_BAR={progress_bar}\n"
-              )
-
-          print("Project progress calculated.")
-          print(f"Completed: {completed}")
+          print(f"Checked: {checked}")
+          print(f"Unchecked: {unchecked}")
           print(f"In Progress: {in_progress}")
-          print(f"Remaining: {remaining}")
-          print(f"Total: {total}")
+          print(f"Total tracked: {total}")
           print(f"Progress: {percentage}%")
-          print(progress_bar)
+          print(bar)
           PY
 
-
       # ==========================================
-      # 5. Collect GitHub activity
+      # 8. Collect git activity (commits, files changed)
       # ==========================================
-      - name: Collect GitHub activity
+      - name: Collect git activity
         shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-
-          echo "===== PROJECT STATUS =====" > project_data.txt
-
-          cat PROJECT_STATUS.md >> project_data.txt
-
-          echo "" >> project_data.txt
-          echo "===== COMMITS LAST 24 HOURS =====" >> project_data.txt
+          echo "===== COMMITS LAST 7 DAYS =====" > git_activity.txt
 
           git log \
-            --since="24 hours ago" \
+            --since="7 days ago" \
             --pretty=format:"%h | %an | %ad | %s" \
-            --date=iso \
-            >> project_data.txt
+            --date=short \
+            >> git_activity.txt
 
-          echo "" >> project_data.txt
-          echo "===== FILE CHANGES LAST 24 HOURS =====" >> project_data.txt
+          echo "" >> git_activity.txt
+          echo "===== COMMITS LAST 30 DAYS =====" >> git_activity.txt
 
           git log \
-            --since="24 hours ago" \
-            --stat \
+            --since="30 days ago" \
+            --pretty=format:"%h | %an | %ad | %s" \
+            --date=short \
+            >> git_activity.txt
+
+          echo "" >> git_activity.txt
+          echo "===== FILES TOUCHED LAST 7 DAYS =====" >> git_activity.txt
+
+          git log \
+            --since="7 days ago" \
+            --name-only \
             --pretty=format:"" \
-            >> project_data.txt
+            | sort | uniq -c | sort -rn \
+            >> git_activity.txt
 
-          echo "" >> project_data.txt
-          echo "===== GITHUB ISSUES =====" >> project_data.txt
+          echo "" >> git_activity.txt
+          echo "===== RECENT COMMITS (last 10) =====" >> git_activity.txt
 
-          gh issue list \
-            --state all \
-            --limit 20 \
-            --json number,title,state,labels,updatedAt \
-            >> project_data.txt
+          git log -10 \
+            --pretty=format:"%h | %ad | %s" \
+            --date=short \
+            >> git_activity.txt
 
           echo ""
-          echo "GitHub activity collected."
-
+          echo "Git activity collected."
 
       # ==========================================
-      # 6. Analyze repository with Gemini
+      # 9. Analyze everything with Gemini (deep code analysis)
       # ==========================================
-      - name: Analyze repository with Gemini
+      - name: Run AI analysis
         shell: bash
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           INDIA_DATE: ${{ env.INDIA_DATE }}
+          INDIA_DAY: ${{ env.INDIA_DAY }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ID: ${{ github.run_id }}
         run: |
-
           python3 <<'PY'
           import os
           import json
           import urllib.request
           import urllib.error
 
-          api_key = os.environ.get(
-              "GEMINI_API_KEY"
-          )
-
+          api_key = os.environ.get("GEMINI_API_KEY")
           if not api_key:
-              raise RuntimeError(
-                  "GEMINI_API_KEY secret is missing."
-              )
+              raise RuntimeError("GEMINI_API_KEY secret is missing.")
 
-          with open(
-              "project_data.txt",
-              "r",
-              encoding="utf-8"
-          ) as file:
+          # Read all collected data
+          with open("repo_meta.txt", "r", encoding="utf-8") as f:
+              repo_meta = f.read()
 
-              project_data = file.read()
+          with open("git_activity.txt", "r", encoding="utf-8") as f:
+              git_activity = f.read()
 
-          with open(
-              "progress.txt",
-              "r",
-              encoding="utf-8"
-          ) as file:
+          with open("progress.txt", "r", encoding="utf-8") as f:
+              progress_raw = f.read()
 
-              progress_data = file.read()
+          progress = {}
+          for line in progress_raw.strip().split("\n"):
+              if "=" in line:
+                  k, v = line.split("=", 1)
+                  progress[k] = v
 
           today = os.environ["INDIA_DATE"]
+          day = os.environ["INDIA_DAY"]
 
           prompt = f"""
-          You are analyzing the GitHub repository for the
-          Jalanidhi Water Authority Website.
+          You are a senior software engineering mentor analyzing a beginner's first project.
+          The developer is learning React and building their first full web application.
 
-          Date:
-          {today}
+          PROJECT: Jalanidhi Water Authority Website
+          DATE: {today}
+          DAY: {day}
+          REPO: {os.environ['REPO_OWNER']}/{os.environ['REPO_NAME']}
 
-          IMPORTANT RULES:
+          IMPORTANT INSTRUCTIONS FOR YOUR ANALYSIS:
 
-          1. Never invent completed work.
+          1. READ THE CODE, NOT JUST CHECKBOXES. The repo_meta.txt contains actual file listings,
+             empty-file detections, placeholder detections, localStorage usage, routes defined,
+             form alert-only detections, and package.json dependencies.
+             Use this real data to tell the developer what's actually built vs what's not.
 
-          2. "COMPLETED TODAY" must only contain work
-             supported by commits from the last 24 hours.
+          2. The git_activity.txt shows real commits and files touched in the last 7 and 30 days.
+             Use this to identify what the developer has actually been working on recently.
 
-          3. PROJECT_STATUS.md is the source of truth
-             for overall project status.
+          3. Be encouraging but honest. This is the developer's first project. Point out what they've
+             done well, what's missing, and give clear next steps.
 
-          4. Never invent remaining tasks.
+          4. NEVER invent work that wasn't done. If a file is flagged as PLACEHOLDER_LIKELY or
+             ALERT_ONLY_FORM, say so clearly.
 
-          5. Only mention remaining tasks that already
-             exist in PROJECT_STATUS.md.
+          5. Focus on the FRONTEND first since that's what's being built now. Backend is not started.
 
-          6. Do not treat an old commit as today's work.
+          6. Give ONE clear next task, not a list. The developer is a beginner and gets overwhelmed.
 
-          7. If there are no commits during the last
-             24 hours, clearly say:
-             No commits were made in the last 24 hours.
+          7. Highlight good practices you see (e.g., good component structure, proper routing, good UI).
 
-          8. Choose the recommended next task only from
-             the Remaining section.
+          PROJECT PROGRESS (from PROJECT_STATUS.md):
+          {progress_raw}
 
-          9. Keep the response concise.
+          REPOSITORY METADATA (file list, empty files, placeholders, localStorage usage, routes, packages):
+          {repo_meta}
 
-          10. Do not calculate a project percentage.
-              The workflow calculates that separately.
+          GIT ACTIVITY (commits and files changed in last 7 and 30 days):
+          {git_activity}
 
-          PROJECT PROGRESS:
+          Return your analysis in these EXACT sections (nothing else):
 
-          {progress_data}
+          ## WHAT YOU BUILT WELL
+          List 3-5 things the developer did well. Be specific — mention actual pages,
+          components, or patterns you see in the data. This is a beginner — acknowledge the wins.
 
-          REPOSITORY INFORMATION:
+          ## WHAT'S ACTUALLY BUILT (code-level)
+          Break down what's real vs placeholder based on the file analysis data.
+          Mention specific files and what state they're in (complete, partial, empty, alert-only, etc.)
 
-          {project_data}
+          ## WHAT'S MISSING / NOT STARTED
+          List the gaps you find from the data. Group them logically (frontend gaps, backend, etc.)
 
-          Return ONLY these five sections:
+          ## YOUR NEXT TASK (ONE task only)
+          Recommend the single most important next task. Explain WHY this task,
+          what files to touch, what to build, and what skills it teaches.
+          Make it beginner-friendly with concrete steps.
 
-          TODAY_ACTIVITY:
-          Give a short description of today's development activity.
+          ## SKILLS YOU'RE BUILDING
+          List 3-5 skills the developer is gaining from this project so far,
+          and 2-3 skills the next task will teach.
 
-          COMPLETED_TODAY:
-          List only work supported by recent commits.
-
-          IN_PROGRESS:
-          List relevant tasks from PROJECT_STATUS.md.
-
-          NEXT_TASK:
-          Recommend ONE task from the Remaining section.
-
-          SUMMARY:
-          Give a short useful summary of today's progress.
+          ## PROGRESS NOTE
+          A brief note on overall progress. Mention the percentage from PROJECT_STATUS.md
+          and whether it feels accurate based on what you see in the code.
           """
 
           request_body = {
-              "contents": [
-                  {
-                      "parts": [
-                          {
-                              "text": prompt
-                          }
-                      ]
-                  }
-              ]
+              "contents": [{
+                  "parts": [{"text": prompt}]
+              }]
           }
 
           url = (
               "https://generativelanguage.googleapis.com/"
               "v1beta/models/gemini-2.5-flash:generateContent"
-              "?key="
-              + api_key
+              f"?key={api_key}"
           )
 
-          request = urllib.request.Request(
+          req = urllib.request.Request(
               url,
-              data=json.dumps(
-                  request_body
-              ).encode("utf-8"),
-              headers={
-                  "Content-Type": "application/json"
-              },
+              data=json.dumps(request_body).encode("utf-8"),
+              headers={"Content-Type": "application/json"},
               method="POST"
           )
 
           try:
-
-              with urllib.request.urlopen(
-                  request,
-                  timeout=60
-              ) as response:
-
-                  response_data = response.read().decode(
-                      "utf-8"
-                  )
-
-          except urllib.error.HTTPError as error:
-
-              error_body = error.read().decode(
-                  "utf-8",
-                  errors="replace"
-              )
-
-              print(
-                  "Gemini API error:"
-              )
-
-              print(error_body)
-
+              with urllib.request.urlopen(req, timeout=90) as resp:
+                  data = json.loads(resp.read().decode("utf-8"))
+          except urllib.error.HTTPError as e:
+              print(f"Gemini API error ({e.code}):")
+              print(e.read().decode("utf-8", errors="replace"))
               raise
 
-          result = json.loads(
-              response_data
-          )
-
           try:
+              report = data["candidates"][0]["content"]["parts"][0]["text"]
+          except (KeyError, IndexError, TypeError):
+              print("Unexpected response:")
+              print(json.dumps(data, indent=2))
+              raise RuntimeError("Could not extract Gemini response.")
 
-              report = (
-                  result["candidates"][0]
-                  ["content"]["parts"][0]
-                  ["text"]
-              )
+          with open("ai_report.txt", "w", encoding="utf-8") as f:
+              f.write(report.strip())
 
-          except (
-              KeyError,
-              IndexError,
-              TypeError
-          ):
-
-              print("Unexpected Gemini response:")
-              print(json.dumps(result, indent=2))
-
-              raise RuntimeError(
-                  "Could not extract Gemini response."
-              )
-
-          with open(
-              "ai_report.txt",
-              "w",
-              encoding="utf-8"
-          ) as file:
-
-              file.write(report.strip())
-
-          print("Gemini analysis completed.")
+          print("AI analysis complete.")
+          print("---")
           print(report)
           PY
 
-
       # ==========================================
-      # 7. Build Telegram report
+      # 10. Build the Telegram report
       # ==========================================
       - name: Build Telegram report
         shell: bash
         env:
           INDIA_DATE: ${{ env.INDIA_DATE }}
           INDIA_TIME: ${{ env.INDIA_TIME }}
+          INDIA_DAY: ${{ env.INDIA_DAY }}
         run: |
-
           python3 <<'PY'
           import os
           import re
 
-          # ------------------------------------------
-          # Read progress
-          # ------------------------------------------
-
+          # ---- Read progress ----
           progress = {}
-
-          with open(
-              "progress.txt",
-              "r",
-              encoding="utf-8"
-          ) as file:
-
-              for line in file:
-
+          with open("progress.txt", "r", encoding="utf-8") as f:
+              for line in f:
                   line = line.strip()
-
                   if "=" in line:
+                      k, v = line.split("=", 1)
+                      progress[k] = v
 
-                      key, value = line.split(
-                          "=",
-                          1
-                      )
+          checked      = progress.get("CHECKED", "0")
+          unchecked    = progress.get("UNCHECKED", "0")
+          in_progress  = progress.get("In_PROGRESS", "0")
+          total        = progress.get("TOTAL", "0")
+          percentage   = progress.get("PERCENTAGE", "0")
+          bar          = progress.get("BAR", "░" * 20)
 
-                      progress[key] = value
+          # ---- Read AI report ----
+          with open("ai_report.txt", "r", encoding="utf-8") as f:
+              ai_report = f.read().strip()
 
-
-          completed = progress.get(
-              "COMPLETED",
-              "0"
-          )
-
-          in_progress = progress.get(
-              "IN_PROGRESS",
-              "0"
-          )
-
-          remaining = progress.get(
-              "REMAINING",
-              "0"
-          )
-
-          percentage = progress.get(
-              "PERCENTAGE",
-              "0"
-          )
-
-          progress_bar = progress.get(
-              "PROGRESS_BAR",
-              "░" * 20
-          )
-
-
-          # ------------------------------------------
-          # Read Gemini report
-          # ------------------------------------------
-
-          with open(
-              "ai_report.txt",
-              "r",
-              encoding="utf-8"
-          ) as file:
-
-              ai_report = file.read().strip()
-
-
-          # ------------------------------------------
-          # Extract AI sections
-          # ------------------------------------------
-
-          def extract_section(
-              name,
-              following_sections
-          ):
-
-              if following_sections:
-
-                  lookahead = "|".join(
-                      re.escape(
-                          section
-                      )
-                      for section
-                      in following_sections
-                  )
-
+          # ---- Extract sections from AI report ----
+          def extract(name, following=None):
+              if following:
+                  lookahead = "|".join(re.escape(s) for s in following)
                   pattern = (
-                      r""
-                      + re.escape(name)
-                      + r"\s*:\s*"
-                      + r"(.*?)"
-                      + r"(?="
-                      + lookahead
-                      + r"\s*:|$)"
+                      re.escape(name) + r"\s*:\s*" +
+                      r"(.*?)" +
+                      r"(?=" + lookahead + r"\s*:|$)"
                   )
-
               else:
+                  pattern = re.escape(name) + r"\s*:\s*" + r"(.*)$"
+              m = re.search(pattern, ai_report, re.DOTALL)
+              if m and m.group(1).strip():
+                  return m.group(1).strip()
+              return "No information."
 
-                  pattern = (
-                      r""
-                      + re.escape(name)
-                      + r"\s*:\s*"
-                      + r"(.*)$"
-                  )
-
-              match = re.search(
-                  pattern,
-                  ai_report,
-                  re.DOTALL
-              )
-
-              if match:
-
-                  result = match.group(1).strip()
-
-                  if result:
-
+          # Try multiple section name formats
+          def extract_flexible(name_candidates, following=None):
+              for name in name_candidates:
+                  result = extract(name, following)
+                  if result and result != "No information.":
                       return result
+              return "No information."
 
-              return "No information available."
+          built_well       = extract_flexible(["WHAT YOU BUILT WELL", "WHAT YOU BUILT WELL:"])
+          actually_built   = extract_flexible(["WHAT'S ACTUALLY BUILT", "WHAT'S ACTUALLY BUILT (CODE-LEVEL)"])
+          missing          = extract_flexible(["WHAT'S MISSING", "WHAT'S MISSING / NOT STARTED"])
+          next_task        = extract_flexible(["YOUR NEXT TASK", "NEXT_TASK", "NEXT TASK"])
+          skills           = extract_flexible(["SKILLS YOU'RE BUILDING", "SKILLS"])
+          progress_note    = extract_flexible(["PROGRESS NOTE"])
 
-
-          today_activity = extract_section(
-              "TODAY_ACTIVITY",
-              [
-                  "COMPLETED_TODAY",
-                  "IN_PROGRESS",
-                  "NEXT_TASK",
-                  "SUMMARY"
-              ]
-          )
-
-
-          completed_today = extract_section(
-              "COMPLETED_TODAY",
-              [
-                  "IN_PROGRESS",
-                  "NEXT_TASK",
-                  "SUMMARY"
-              ]
-          )
-
-
-          current_progress = extract_section(
-              "IN_PROGRESS",
-              [
-                  "NEXT_TASK",
-                  "SUMMARY"
-              ]
-          )
-
-
-          next_task = extract_section(
-              "NEXT_TASK",
-              [
-                  "SUMMARY"
-              ]
-          )
-
-
-          summary = extract_section(
-              "SUMMARY",
-              []
-          )
-
-
-          # ------------------------------------------
-          # Clean AI output
-          # ------------------------------------------
-
-          def clean_text(text):
-
+          # ---- Clean formatting ----
+          def clean(text):
               text = text.strip()
-
-              text = re.sub(
-                  r"^\s*[-*]\s+",
-                  "• ",
-                  text,
-                  flags=re.MULTILINE
-              )
-
+              text = re.sub(r"^\s*[-*]\s+", "• ", text, flags=re.MULTILINE)
+              text = re.sub(r"\n{3,}", "\n\n", text)
               return text
 
+          built_well       = clean(built_well)
+          actually_built   = clean(actually_built)
+          missing          = clean(missing)
+          next_task        = clean(next_task)
+          skills           = clean(skills)
+          progress_note    = clean(progress_note)
 
-          today_activity = clean_text(
-              today_activity
-          )
-
-          completed_today = clean_text(
-              completed_today
-          )
-
-          current_progress = clean_text(
-              current_progress
-          )
-
-          next_task = clean_text(
-              next_task
-          )
-
-          summary = clean_text(
-              summary
-          )
-
-
-          # ------------------------------------------
-          # Build Telegram message
-          # ------------------------------------------
-
+          # ---- Build message ----
           lines = []
 
-          lines.append(
-              "🚰 JALANIDHI DAILY REPORT"
-          )
-
+          lines.append("🚰 JALANIDHI — AI PROJECT ANALYSIS")
+          lines.append("")
+          lines.append(f"📅 {os.environ['INDIA_DATE']}")
+          lines.append(f"🕐 {os.environ['INDIA_TIME']}")
           lines.append("")
 
-          lines.append(
-              "📅 "
-              + os.environ["INDIA_DATE"]
-          )
-
-          lines.append(
-              "🕐 "
-              + os.environ["INDIA_TIME"]
-          )
-
+          lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
           lines.append("")
 
-          lines.append(
-              "━━━━━━━━━━━━━━━━━━━━"
-          )
-
+          lines.append("📊 PROJECT PROGRESS")
+          lines.append("")
+          lines.append(f"🟢 Overall: {percentage}%")
+          lines.append("")
+          lines.append(f"{bar} {percentage}%")
+          lines.append("")
+          lines.append(f"✅ Checked: {checked}  |  ⬜ Unchecked: {unchecked}  |  🟡 In Progress: {in_progress}")
+          lines.append(f"📋 Total tracked items: {total}")
           lines.append("")
 
-          lines.append(
-              "📊 PROJECT PROGRESS"
-          )
-
+          lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
           lines.append("")
 
-          lines.append(
-              "🟢 Overall Progress: "
-              + percentage
-              + "%"
-          )
-
+          lines.append("💪 WHAT YOU BUILT WELL")
+          lines.append("")
+          lines.append(built_well)
           lines.append("")
 
-          lines.append(
-              progress_bar
-              + " "
-              + percentage
-              + "%"
-          )
-
+          lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
           lines.append("")
 
-          lines.append(
-              "📋 TASK STATUS"
-          )
-
+          lines.append("🔍 WHAT'S ACTUALLY BUILT (code-level)")
+          lines.append("")
+          lines.append(actually_built)
           lines.append("")
 
-          lines.append(
-              "✅ Completed: "
-              + completed
-          )
-
-          lines.append(
-              "🔄 In Progress: "
-              + in_progress
-          )
-
-          lines.append(
-              "⬜ Remaining: "
-              + remaining
-          )
-
+          lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
           lines.append("")
 
-          lines.append(
-              "━━━━━━━━━━━━━━━━━━━━"
-          )
-
+          lines.append("🚧 WHAT'S MISSING / NOT STARTED")
+          lines.append("")
+          lines.append(missing)
           lines.append("")
 
-          lines.append(
-              "📈 TODAY'S ACTIVITY"
-          )
-
+          lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
           lines.append("")
 
-          lines.append(
-              today_activity
-          )
-
+          lines.append("🎯 YOUR NEXT TASK")
+          lines.append("")
+          lines.append(next_task)
           lines.append("")
 
-          lines.append(
-              "━━━━━━━━━━━━━━━━━━━━"
-          )
-
+          lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
           lines.append("")
 
-          lines.append(
-              "✅ COMPLETED TODAY"
-          )
-
+          lines.append("📚 SKILLS YOU'RE BUILDING")
+          lines.append("")
+          lines.append(skills)
           lines.append("")
 
-          lines.append(
-              completed_today
-          )
-
+          lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
           lines.append("")
 
-          lines.append(
-              "━━━━━━━━━━━━━━━━━━━━"
-          )
-
+          lines.append("📝 PROGRESS NOTE")
+          lines.append("")
+          lines.append(progress_note)
           lines.append("")
 
-          lines.append(
-              "🔄 IN PROGRESS"
-          )
-
+          lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
           lines.append("")
-
-          lines.append(
-              current_progress
-          )
-
-          lines.append("")
-
-          lines.append(
-              "━━━━━━━━━━━━━━━━━━━━"
-          )
-
-          lines.append("")
-
-          lines.append(
-              "🎯 NEXT BEST TASK"
-          )
-
-          lines.append("")
-
-          lines.append(
-              "👉 "
-              + next_task
-          )
-
-          lines.append("")
-
-          lines.append(
-              "━━━━━━━━━━━━━━━━━━━━"
-          )
-
-          lines.append("")
-
-          lines.append(
-              "🤖 AI SUMMARY"
-          )
-
-          lines.append("")
-
-          lines.append(
-              summary
-          )
-
-          lines.append("")
-
-          lines.append(
-              "━━━━━━━━━━━━━━━━━━━━"
-          )
-
-          lines.append("")
-
-          lines.append(
-              "🚀 Keep building Jalanidhi!"
-          )
-
+          lines.append("🚀 Keep building — you're doing great!")
 
           message = "\n".join(lines)
 
+          # Telegram 4096 char limit
+          if len(message) > 4000:
+              message = message[:3997] + "...\n\n(Report shortened)"
 
-          # ------------------------------------------
-          # Telegram maximum message safety
-          # ------------------------------------------
-
-          if len(message) > 3900:
-
-              message = (
-                  message[:3900]
-                  + "\n\n"
-                  + "⚠️ Report shortened."
-              )
-
-
-          # ------------------------------------------
-          # Save Telegram message
-          # ------------------------------------------
-
-          with open(
-              "telegram_message.txt",
-              "w",
-              encoding="utf-8"
-          ) as file:
-
-              file.write(message)
-
+          with open("telegram_message.txt", "w", encoding="utf-8") as f:
+              f.write(message)
 
           print("")
-          print(
-              "================ TELEGRAM REPORT ================"
-          )
+          print("================ TELEGRAM REPORT ================")
           print("")
           print(message)
           print("")
-          print(
-              "=================================================="
-          )
+          print("==================================================")
           PY
 
-
       # ==========================================
-      # 8. Send report to Telegram
+      # 11. Send report to Telegram
       # ==========================================
-      - name: Send report to Telegram
+      - name: Send Telegram report
         shell: bash
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-
           python3 <<'PY'
           import os
           import urllib.request
@@ -876,98 +584,36 @@ jobs:
           import json
           import urllib.error
 
-          bot_token = os.environ.get(
-              "TELEGRAM_BOT_TOKEN"
-          )
-
-          chat_id = os.environ.get(
-              "TELEGRAM_CHAT_ID"
-          )
+          bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+          chat_id   = os.environ.get("TELEGRAM_CHAT_ID")
 
           if not bot_token:
-
-              raise RuntimeError(
-                  "TELEGRAM_BOT_TOKEN secret is missing."
-              )
-
+              raise RuntimeError("TELEGRAM_BOT_TOKEN secret is missing.")
           if not chat_id:
+              raise RuntimeError("TELEGRAM_CHAT_ID secret is missing.")
 
-              raise RuntimeError(
-                  "TELEGRAM_CHAT_ID secret is missing."
-              )
+          with open("telegram_message.txt", "r", encoding="utf-8") as f:
+              message = f.read()
 
-          with open(
-              "telegram_message.txt",
-              "r",
-              encoding="utf-8"
-          ) as file:
+          url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+          data = urllib.parse.urlencode({
+              "chat_id": chat_id,
+              "text": message,
+              "parse_mode": "HTML"
+          }).encode("utf-8")
 
-              message = file.read()
-
-
-          url = (
-              "https://api.telegram.org/bot"
-              + bot_token
-              + "/sendMessage"
-          )
-
-
-          data = urllib.parse.urlencode(
-              {
-                  "chat_id": chat_id,
-                  "text": message
-              }
-          ).encode("utf-8")
-
-
-          request = urllib.request.Request(
-              url,
-              data=data,
-              method="POST"
-          )
-
+          req = urllib.request.Request(url, data=data, method="POST")
 
           try:
-
-              with urllib.request.urlopen(
-                  request,
-                  timeout=30
-              ) as response:
-
-                  response_text = (
-                      response.read()
-                      .decode("utf-8")
-                  )
-
-          except urllib.error.HTTPError as error:
-
-              error_body = error.read().decode(
-                  "utf-8",
-                  errors="replace"
-              )
-
-              print(
-                  "Telegram API error:"
-              )
-
-              print(error_body)
-
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  result = json.loads(resp.read().decode("utf-8"))
+          except urllib.error.HTTPError as e:
+              print(f"Telegram error ({e.code}):")
+              print(e.read().decode("utf-8", errors="replace"))
               raise
 
-
-          result = json.loads(
-              response_text
-          )
-
-
           if not result.get("ok"):
+              raise RuntimeError("Telegram rejected the message.")
 
-              raise RuntimeError(
-                  "Telegram rejected the message."
-              )
-
-
-          print(
-              "✅ Telegram report sent successfully."
-          )
+          print("✅ Telegram report sent successfully.")
           PY
