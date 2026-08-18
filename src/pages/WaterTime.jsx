@@ -1,47 +1,75 @@
 import { useNavigate } from "react-router-dom";
 import { useState,} from "react";
 import { FaClock, FaTint, FaMapMarkerAlt, FaCalendarAlt, FaPhoneAlt } from "react-icons/fa";
-import waterTime from "../assets/images/connection.webp";
+import waterTime from "../assets/images/waterTime.jpg";
 
 const waterDistributionData = [
     {
         id: 1,
-        area: "ഇരിങ്ങാട്ടിരി",
+        area: "നെല്ലിക്കലടി",
         morning: "6:00 AM - 8:00 AM",
         evening: "6:00 PM - 8:00 PM",
         days: "എല്ലാ ദിവസവും",
     },
     {
         id: 2,
-        area: "പ്രദേശം 2",
+        area: "പൂളക്കൽ",
         morning: "6:30 AM - 8:30 AM",
         evening: "6:30 PM - 8:30 PM",
         days: "എല്ലാ ദിവസവും",
     },
     {
         id: 3,
-        area: "പ്രദേശം 3",
+        area: "പുത്തനഴി",
         morning: "7:00 AM - 9:00 AM",
         evening: "7:00 PM - 9:00 PM",
         days: "എല്ലാ ദിവസവും",
     },
     {
         id: 4,
-        area: "പ്രദേശം 4",
+        area: "കോഴിയാരംക്കുന്ന്",
         morning: "5:30 AM - 7:30 AM",
         evening: "5:30 PM - 7:30 PM",
         days: "തിങ്കൾ - ശനി",
     },
     {
         id: 5,
-        area: "പ്രദേശം 5",
+        area: "കളത്തിൽക്കുന്ന്",
         morning: "6:00 AM - 8:00 AM",
         evening: "6:00 PM - 8:00 PM",
         days: "എല്ലാ ദിവസവും",
     },
     {
         id: 6,
-        area: "പ്രദേശം 6",
+        area: "കൂമ്മുള്ളി",
+        morning: "7:00 AM - 9:00 AM",
+        evening: "7:00 PM - 9:00 PM",
+        days: "എല്ലാ ദിവസവും",
+    },
+    {
+        id: 7,
+        area: "വേളിപ്പാടം",
+        morning: "7:00 AM - 9:00 AM",
+        evening: "7:00 PM - 9:00 PM",
+        days: "എല്ലാ ദിവസവും",
+    },
+    {
+        id: 8,
+        area: "വീട്ടിക്കുന്ന്",
+        morning: "7:00 AM - 9:00 AM",
+        evening: "7:00 PM - 9:00 PM",
+        days: "എല്ലാ ദിവസവും",
+    },
+    {
+        id: 9,
+        area: "ഭാവനംപറമ്പ്",
+        morning: "7:00 AM - 9:00 AM",
+        evening: "7:00 PM - 9:00 PM",
+        days: "എല്ലാ ദിവസവും",
+    },
+    {
+        id: 10,
+        area: "ചാമാക്കുന്ന്",
         morning: "7:00 AM - 9:00 AM",
         evening: "7:00 PM - 9:00 PM",
         days: "എല്ലാ ദിവസവും",
@@ -68,14 +96,10 @@ function WaterTimePage() {
                 />
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-blue-950/60"></div>
+                <div className="absolute inset-0 bg-black/50"></div>
 
                 {/* Hero Content */}
                 <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4">
-
-                    <div className="text-white text-4xl md:text-5xl mb-4">
-                        <FaClock className="text-xl"/>
-                    </div>
 
                     <h1 className="text-white font-extrabold text-4xl md:text-6xl">
                         ജല വിതരണസമയം
