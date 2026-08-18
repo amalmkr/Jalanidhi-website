@@ -2,6 +2,7 @@ import connection from '../assets/images/connection.webp'
 import NewConnectionCard from '../sections/NewConnection/NewConnectionCard';
 import NumberVerification from '../sections/NewConnection/NumberVerification';
 
+
 function NewConnection(){
 
     return(
@@ -34,6 +35,7 @@ function NewConnection(){
         
             <NewConnectionCard/>
             <NumberVerification/>
+            
             
             
         </section>

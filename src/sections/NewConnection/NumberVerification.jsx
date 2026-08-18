@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function NumberVerification() {
     const [mobileNumber, setMobileNumber] = useState("");
     const [showOtp, setShowOtp] = useState(false);
     const [otp, setOtp] = useState("");
     const [error, setError] = useState(false);
+    const [otpError, setOtpError] = useState(false);
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -19,6 +22,22 @@ function NumberVerification() {
 
         setShowOtp(true);
     };
+
+    const handleVerifyOtp = () => {
+    if (otp === "" || otp.length !== 6) {
+        setOtpError(true);
+        return;
+    }
+
+    setOtpError(false);
+
+    alert('OTP validation Successfull')
+
+    // OTP is valid -- go to connection form
+    navigate("/connection-form");
+};
+
+    const navigate=useNavigate();
 
     return (
         <section className="pb-10">
@@ -97,6 +116,11 @@ function NumberVerification() {
                         focus:outline-none focus:ring-2
                         focus:ring-blue-500 rounded"
                     />
+                    {otpError && (
+                        <p className="text-sm mt-2 text-red-600">
+                            Enter Valid OTP
+                        </p>
+                    )}
 
                     <div className="flex justify-center mt-8">
 
@@ -105,6 +129,7 @@ function NumberVerification() {
                             className="text-white bg-blue-500
                             rounded-xl font-bold px-5 py-2
                             hover:bg-blue-600"
+                            onClick={handleVerifyOtp}
                         >
                             Verify OTP
                         </button>
