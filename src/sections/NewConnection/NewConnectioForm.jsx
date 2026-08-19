@@ -1,8 +1,11 @@
 import Accordion from "../../components/Accordian";
-import { useLocation } from "react-router-dom";
+import { useLocation,useNavigate } from "react-router-dom";
 import { useState } from "react";
 function NewConnectionForm(){
     const location = useLocation();
+    const navigate = useNavigate();   
+  
+
 
     const[formData,setFormData]=useState({
         name:"",
@@ -19,14 +22,19 @@ function NewConnectionForm(){
     });
 
     const handleSubmit = (e)=>{
-        // e.preventDefault();
+        e.preventDefault();
 
         console.log("form data : ",formData);
         console.log("Mobile number :",mobileNumber);
-        alert("The form is Submitted")
+        navigate('/connection-success',{
+            state:{
+                mobileNumber:mobileNumber,
+                formData:formData
+            }
+        })
     }
 
-    
+     
 
     const mobileNumber = location.state?.mobileNumber || ""; 
 

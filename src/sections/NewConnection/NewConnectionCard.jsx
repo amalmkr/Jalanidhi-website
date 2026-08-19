@@ -3,6 +3,7 @@ import { IoDocumentTextOutline } from "react-icons/io5";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { IoTimeOutline } from "react-icons/io5";
 
+
 function NewConnectionCard(){
 
     return(

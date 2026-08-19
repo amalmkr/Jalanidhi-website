@@ -14,6 +14,7 @@ import Help from './pages/Help';
 import WaterTime from './pages/WaterTime';
 import NewConnection from './pages/NewConnection';
 import CheckConnection from './pages/CheckConnection';
+import NewConnectionSuccess from './sections/NewConnection/NewConnectionSuccess';
 import NewConnectionForm from './sections/NewConnection/NewConnectioForm';
 import ScrollToTop from './components/ScrollToTop';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -42,6 +43,7 @@ function App() {
       <Route path='/check-connection' element={<CheckConnection/>}/>
       <Route path='/water-time' element={<WaterTime/>}/>
       <Route path='/connection-form' element={<NewConnectionForm/>}/>
+      <Route path='/connection-success' element={<NewConnectionSuccess/>}/>
     </Routes>
     <Footer/>
     </BrowserRouter>
