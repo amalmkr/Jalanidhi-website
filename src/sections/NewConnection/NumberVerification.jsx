@@ -34,7 +34,12 @@ function NumberVerification() {
     alert('OTP validation Successfull')
 
     // OTP is valid -- go to connection form
-    navigate("/connection-form");
+    navigate("/connection-form",{
+        state:{
+            mobileNumber:mobileNumber
+        }
+    });
+
 };
 
     const navigate=useNavigate();
@@ -130,6 +135,7 @@ function NumberVerification() {
                             rounded-xl font-bold px-5 py-2
                             hover:bg-blue-600"
                             onClick={handleVerifyOtp}
+
                         >
                             Verify OTP
                         </button>

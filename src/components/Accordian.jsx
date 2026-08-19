@@ -5,8 +5,9 @@ function Accordion({ title, children }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border border-blue-200 rounded-xl mb-4 overflow-hidden shadow-sm">
+    <div className="border border-blue-200 rounded-xl mb-4 overflow-hidden shadow-sm mx-10">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="w-full flex justify-between items-center px-6 py-4 bg-blue-50 hover:bg-blue-100 transition"
       >
