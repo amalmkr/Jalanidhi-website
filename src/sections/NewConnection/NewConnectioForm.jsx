@@ -18,13 +18,22 @@ function NewConnectionForm(){
         ownershipProof: null
     });
 
+    const handleSubmit = (e)=>{
+        // e.preventDefault();
+
+        console.log("form data : ",formData);
+        console.log("Mobile number :",mobileNumber);
+        alert("The form is Submitted")
+    }
+
+    
 
     const mobileNumber = location.state?.mobileNumber || ""; 
 
     return(
         <>
             <section className="pt-30 pb-20">       
-                <form> 
+                <form onSubmit={handleSubmit}> 
                     <Accordion title="USER INFORMATION" >
                         <div className=" bg-white shadow-2xl rounded-2xl max-w-[400px] md:max-w-[850px] p-3 mx-auto pb-10">
                     
