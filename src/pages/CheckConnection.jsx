@@ -68,9 +68,33 @@ function CheckConnection(){
             </div>
 
             {showDetails && (
-                <div className='shadow-2xl p-5 max-w-[400px] md:max-w-[800px] bg-white rounded-2xl my-10 mx-auto'>
+                <div className='shadow-2xl p-5 max-w-[400px] md:max-w-[600px] bg-white rounded-2xl my-10 mx-auto'>
                     <h2 className='text-2xl text-blue-800 font-bold text-center'>Connection Status</h2>
                     <hr className='bg-blue-500 mt-4 mx-50'/>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 mt-5">                                       
+                        <p className='text-gray-600'>Application Number</p>
+                        <p className='font-bold'>JN-2026-00123</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 mt-5">                        
+                        <p className='text-gray-600'>Applicant Name</p>
+                        <p className='font-bold'>Amal M</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 mt-5">                        
+                        <p className='text-gray-600'>Mobile Number</p>
+                        <p className='font-bold '>8281418574</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 mt-5">                        
+                        <p className='text-gray-600'>Area</p>
+                        <p className='font-bold'>Puthanazhi</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 mt-5">                        
+                        <p className='text-gray-600'>Application Date</p>
+                        <p className='font-bold'>04/8/2026</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 mt-5">                        
+                        <p className='text-gray-600'>Current Status</p>
+                        <p className='font-bold text-yellow-600 text-lg'>Under Process</p>
+                    </div>
 
                 </div>
             )}
