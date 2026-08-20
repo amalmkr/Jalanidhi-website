@@ -1,0 +1,147 @@
+name: Jalanidhi → Notion Project Tracker Sync
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "30 17 * * *" # 11:00 PM IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Collect project snapshot
+        shell: bash
+        run: |
+          echo "===== RECENT COMMITS =====" > project_snapshot.txt
+          git log -15 --pretty=format:"%h | %ad | %s" --date=short >> project_snapshot.txt
+          echo "" >> project_snapshot.txt
+          echo "===== PROJECT FILES =====" >> project_snapshot.txt
+          find src -type f \( -name "*.jsx" -o -name "*.js" -o -name "*.css" \) | sort >> project_snapshot.txt
+          echo "" >> project_snapshot.txt
+          echo "===== PAGE SIZES =====" >> project_snapshot.txt
+          for f in src/pages/*.jsx; do
+            [ -f "$f" ] && wc -c "$f"
+          done | sort -nr >> project_snapshot.txt
+          echo "" >> project_snapshot.txt
+          echo "===== COMPONENTS =====" >> project_snapshot.txt
+          find src/components src/sections -type f 2>/dev/null | sort >> project_snapshot.txt
+          echo "" >> project_snapshot.txt
+          echo "===== PACKAGE =====" >> project_snapshot.txt
+          cat package.json >> project_snapshot.txt
+          echo "" >> project_snapshot.txt
+          echo "===== BACKEND DETECTION =====" >> project_snapshot.txt
+          if find . -maxdepth 3 -type f \( -name "manage.py" -o -name "requirements.txt" -o -name "*.py" \) | grep -q .; then
+            echo "Backend-like files detected" >> project_snapshot.txt
+          else
+            echo "No backend files detected" >> project_snapshot.txt
+          fi
+          echo "" >> project_snapshot.txt
+          echo "===== STATUS FILE =====" >> project_snapshot.txt
+          if [ -f PROJECT_STATUS.md ]; then cat PROJECT_STATUS.md >> project_snapshot.txt; else echo "PROJECT_STATUS.md not found" >> project_snapshot.txt; fi
+
+      - name: Analyse repository with Gemini
+        if: ${{ secrets.GEMINI_API_KEY != '' }}
+        shell: bash
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          snapshot = open('project_snapshot.txt', encoding='utf-8').read()
+          prompt = '''You are the project manager for the Jalanidhi Water Authority React project. Analyse the repository snapshot below. Return ONLY valid JSON with these keys: frontend_progress (integer 0-100), backend_progress (integer 0-100), database_progress (integer 0-100), api_progress (integer 0-100), testing_progress (integer 0-100), current_phase (string), completed (array of strings, max 10), remaining (array of strings, max 10), next_action (string), summary (string max 400 chars). Do not invent completed features. Treat PROJECT_STATUS.md as historical evidence if it conflicts with actual files/commits; prefer actual repository evidence.''' 
+          data = {"contents":[{"parts":[{"text":prompt + "\n\nREPOSITORY SNAPSHOT:\n" + snapshot[:60000]}]}]}
+          url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + os.environ['GEMINI_API_KEY']
+          req = urllib.request.Request(url, data=json.dumps(data).encode(), headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=120) as r:
+              result = json.load(r)
+          text = result['candidates'][0]['content']['parts'][0]['text'].strip()
+          if text.startswith('```'):
+              text = text.split('\n',1)[1].rsplit('```',1)[0].strip()
+          parsed = json.loads(text)
+          open('analysis.json','w',encoding='utf-8').write(json.dumps(parsed, ensure_ascii=False, indent=2))
+          print(json.dumps(parsed, indent=2, ensure_ascii=False))
+          PY
+
+      - name: Fallback analysis when Gemini is unavailable
+        if: ${{ secrets.GEMINI_API_KEY == '' }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os
+          pages = []
+          if os.path.isdir('src/pages'):
+              pages = [x for x in os.listdir('src/pages') if x.endswith(('.jsx','.js'))]
+          backend = any(os.path.exists(x) for x in ['manage.py','backend','server','api'])
+          data = {
+            'frontend_progress': 80 if pages else 0,
+            'backend_progress': 0 if not backend else 20,
+            'database_progress': 0,
+            'api_progress': 0,
+            'testing_progress': 20,
+            'current_phase': 'Frontend completion' if not backend else 'Backend development',
+            'completed': [f'Frontend page detected: {x}' for x in pages[:10]],
+            'remaining': ['Run deeper AI analysis by adding GEMINI_API_KEY', 'Finish validation, loading/error states, responsive testing and regression testing'],
+            'next_action': 'Finish the frontend completion checklist',
+            'summary': 'Automatic fallback snapshot; add GEMINI_API_KEY for deeper repository analysis.'
+          }
+          open('analysis.json','w',encoding='utf-8').write(json.dumps(data, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Update Notion tracker
+        if: ${{ secrets.NOTION_TOKEN != '' && secrets.NOTION_MASTER_PAGE_ID != '' }}
+        shell: bash
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_MASTER_PAGE_ID: ${{ secrets.NOTION_MASTER_PAGE_ID }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, datetime
+          a = json.load(open('analysis.json', encoding='utf-8'))
+          now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).strftime('%d %b %Y, %I:%M %p IST')
+          repo = os.environ.get('GITHUB_REPOSITORY','amalmkr/Jalanidhi-website')
+          sha = os.environ.get('GITHUB_SHA','')[:7]
+          def rich(text, bold=False):
+              return {'type':'text','text':{'content':text},'annotations':{'bold':bold}}
+          def paragraph(text):
+              return {'object':'block','type':'paragraph','paragraph':{'rich_text':[rich(text)]}}
+          def heading(text):
+              return {'object':'block','type':'heading_3','heading_3':{'rich_text':[rich(text, True)]}}
+          def callout(text):
+              return {'object':'block','type':'callout','callout':{'rich_text':[rich(text, True)],'icon':{'type':'emoji','emoji':'🤖'}}}
+          blocks = [
+            callout(f'🤖 AUTO-UPDATED — {now} — commit {sha}'),
+            heading('📊 Automated Project Snapshot'),
+            paragraph(f"Frontend: {a.get('frontend_progress',0)}%  |  Backend: {a.get('backend_progress',0)}%  |  Database: {a.get('database_progress',0)}%  |  API: {a.get('api_progress',0)}%  |  Testing: {a.get('testing_progress',0)}%"),
+            paragraph(f"Current phase: {a.get('current_phase','Unknown')}"),
+            paragraph(f"Next action: {a.get('next_action','Review tracker')}"),
+            paragraph(a.get('summary','')),
+            heading('✅ Recently detected completed work'),
+          ]
+          for x in a.get('completed',[])[:10]: blocks.append(paragraph('• '+x))
+          blocks.append(heading('🧩 Detected remaining work'))
+          for x in a.get('remaining',[])[:10]: blocks.append(paragraph('• '+x))
+          payload = json.dumps({'children':blocks}).encode()
+          req = urllib.request.Request(f"https://api.notion.com/v1/blocks/{os.environ['NOTION_MASTER_PAGE_ID']}/children", data=payload, headers={'Authorization':'Bearer '+os.environ['NOTION_TOKEN'],'Notion-Version':'2022-06-28','Content-Type':'application/json'}, method='PATCH')
+          with urllib.request.urlopen(req, timeout=30) as r:
+              print('Notion updated:', r.status)
+          PY
+
+      - name: Explain missing Notion configuration
+        if: ${{ secrets.NOTION_TOKEN == '' || secrets.NOTION_MASTER_PAGE_ID == '' }}
+        run: |
+          echo "Notion sync skipped. Add repository secrets NOTION_TOKEN and NOTION_MASTER_PAGE_ID to enable automatic updates."
