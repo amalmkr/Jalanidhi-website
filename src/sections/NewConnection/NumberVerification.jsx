@@ -7,12 +7,12 @@ function NumberVerification() {
     const [otp, setOtp] = useState("");
     const [error, setError] = useState(false);
     const [otpError, setOtpError] = useState(false);
-
+    const onlyNumber= /^[0-9]*$/;
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (mobileNumber === "" || mobileNumber.length !== 10) {
+        if (mobileNumber === "") {
             setError(true);
             return;
         }
@@ -66,11 +66,20 @@ function NumberVerification() {
                             type="tel"
                             value={mobileNumber}
                             onChange={(e) => {
-                                setMobileNumber(e.target.value);
+                                const value = e.target.value;
+
+                                if(!onlyNumber.test(value)){
+                                    return;
+                                }
+                                setMobileNumber(value);
                                 setError(false);
                             }}
                             placeholder="Enter 10 digit mobile number"
                             maxLength={10}
+                            minLength={10}
+                            required
+                            inputMode="numeric"
+                            pattern="[6-9][0-9]{9}"
                             className="w-full px-3 py-2 border border-gray-300
                             focus:outline-none focus:ring-2
                             focus:ring-blue-500 rounded"
@@ -113,9 +122,21 @@ function NumberVerification() {
                     <input
                         type="text"
                         value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
+                        onChange={(e) =>{
+                            const value=e.target.value
+
+                            if(!onlyNumber.test(value)){
+                                return;
+                            }
+
+                            setOtp(value);
+                            setError(false);
+                        }}
                         placeholder="Enter 6 digit OTP"
                         maxLength={6}
+                        minLength={6}
+                        inputMode="numeric"
+                        required
                         className="w-full px-3 py-2 mt-2
                         border border-gray-300
                         focus:outline-none focus:ring-2

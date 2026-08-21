@@ -1,6 +1,6 @@
 import Accordion from "../../components/Accordian";
 import { useLocation,useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 function NewConnectionForm(){
     const location = useLocation();
     const navigate = useNavigate();   
@@ -21,6 +21,7 @@ function NewConnectionForm(){
         ownershipProof: null
     });
 
+
     const handleSubmit = (e)=>{
         e.preventDefault();
 
@@ -37,6 +38,33 @@ function NewConnectionForm(){
      
 
     const mobileNumber = location.state?.mobileNumber || ""; 
+    
+        useEffect(() => {
+            if (!mobileNumber) {
+                navigate("/number-verification", { replace: true });
+            }
+        }, [mobileNumber, navigate]);
+
+        const handleFileChange = (e, fieldName) => {
+    const file = e.target.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5 MB
+
+    if (file.size > maxSize) {
+        alert("File size must be less than 5 MB.");
+        e.target.value = "";
+        return;
+    }
+
+    setFormData({
+        ...formData,
+        [fieldName]: file
+    });
+};
 
     return(
         <>
@@ -49,12 +77,20 @@ function NewConnectionForm(){
                        
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">Name  </label>
-                            <input type="text" value={formData.name} onChange={(e)=>{setFormData({...formData,name:e.target.value});}} placeholder="Enter your full name" className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
+                            <input type="text" required value={formData.name} pattern="[A-Za-z]+( [A-Za-z]+)*"
+                            onChange={(e)=>{const value=e.target.value;
+                            if(!/^[A-Za-z ]*$/.test(value)){
+                                return;
+                            }
+                            setFormData({...formData,name:e.target.value});
+                        }} 
+                            placeholder="Enter your full name"
+                             className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
                         </div>
                         
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">Mobile Number </label>
-                            <input type="text" placeholder="Enter your Mobile Number"  value={mobileNumber} readOnly className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
+                            <input type="text"  placeholder="Enter your Mobile Number"  value={mobileNumber} readOnly className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
                         </div>
 
                         <div className="flex flex-col mt-10 mx-10 gap-2">
@@ -64,11 +100,50 @@ function NewConnectionForm(){
 
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">AADHAR / Identity Information</label>
-                            <input type="text" placeholder="Enter your Identity Deatils" value={formData.identity} onChange={(e)=>{setFormData({...formData,identity:e.target.value})}} className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
+                            <input
+                                type="text"
+                                required
+                                maxLength={12}
+                                minLength={12}
+                                pattern="[0-9]{12}"
+                                className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"
+                                value={formData.identity}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    if (!/^[0-9]*$/.test(value)) {
+                                        return;
+                                    }
+
+                                    setFormData({
+                                        ...formData,
+                                        identity: value
+                                    });
+                                }}
+                            />                        
                         </div>
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">House Number</label>
-                            <input type="text" placeholder="Enter your house No. "  value={formData.houseNumber} onChange={(e)=>{setFormData({...formData,houseNumber:e.target.value})}} className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
+                            <input
+                                type="text"
+                                pattern="[A-Za-z0-9/-]+"
+                                required
+                                placeholder="Enter your house No. "
+                                value={formData.houseNumber}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    if (!/^[0-9A-Za-z/-]*$/.test(value)) {
+                                        return;
+                                    }
+
+                                    setFormData({
+                                        ...formData,
+                                        houseNumber: value
+                                    });
+                                }}
+                                className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"
+                            />
                         </div>
                 </div>
                 </Accordion>
@@ -81,7 +156,17 @@ function NewConnectionForm(){
                        
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">House Name</label>
-                            <input type="text" value={formData.houseName} onChange={(e)=>{setFormData({...formData,houseName:e.target.value})}} placeholder="Enter your House Name / Number" className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
+                            <input type="text" required value={formData.houseName} 
+                            pattern="[A-Za-z]+( [A-Za-z]+)*"
+                            onChange={(e)=>{
+                                const value=e.target.value;
+                                if(!/^[A-Za-z ]*$/.test(value)){
+                                    return;
+                                }
+                                setFormData({...formData,houseName:e.target.value})}} 
+
+                            placeholder="Enter your House Name" 
+                            className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
                         </div>
                         
                     <div>
@@ -90,28 +175,53 @@ function NewConnectionForm(){
                     </label>
 
                     <select required value={formData.area} onChange={(e)=>{setFormData({...formData,area:e.target.value})}} className="border-2 border-blue-100 px-3 py-2 rounded-xl  focus:outline-none focus:ring-1 focus:ring-blue-500 w-100 ml-10">
-                        <option>പ്രദേശം തിരഞ്ഞെടുക്കുക</option>
-                        <option>പൂളക്കൽ </option>
-                        <option>നെല്ലിക്കലടി</option>
-                        <option>പുത്തനഴി</option>
-                        <option>കോഴിയാരംക്കുന്ന്</option>
-                        <option>കളത്തിൽക്കുന്ന് </option>
-                        <option>കൂമ്മുള്ളി</option>
-                        <option>വീട്ടിക്കുന്ന്</option>
-                        <option>വേളിപ്പാടം</option>
-                        <option>ഭാവനംപറമ്പ്</option>
-                        <option>ചാമാക്കുന്ന് </option>
+                        <option value="">പ്രദേശം തിരഞ്ഞെടുക്കുക</option>
+                        <option value="പൂളക്കൽ">പൂളക്കൽ </option>
+                        <option value="നെല്ലിക്കലടി">നെല്ലിക്കലടി</option>
+                        <option value="പുത്തനഴി">പുത്തനഴി</option>
+                        <option value="കോഴിയാരംക്കുന്ന്">കോഴിയാരംക്കുന്ന്</option>
+                        <option value="കളത്തിൽക്കുന്ന്">കളത്തിൽക്കുന്ന് </option>
+                        <option value="കൂമ്മുള്ളി">കൂമ്മുള്ളി</option>
+                        <option value="വീട്ടിക്കുന്ന്">വീട്ടിക്കുന്ന്</option>
+                        <option value="വേളിപ്പാടം">വേളിപ്പാടം</option>
+                        <option value="ഭാവനംപറമ്പ്">ഭാവനംപറമ്പ്</option>
+                        <option value="ചാമാക്കുന്ന്">ചാമാക്കുന്ന് </option>
                     </select>
                     </div>
 
                         <div className="flex flex-col mt-5 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">Full address</label>
-                            <textarea  placeholder="Enter Ward Name" value={formData.address} onChange={(e)=>{setFormData({...formData,address:e.target.value})}} className="w-full rounded-xl border max-h-[200px] border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></textarea>
+                        <textarea
+                            placeholder="Enter Full Address"
+                            required
+                            value={formData.address}
+                            onChange={(e) => {
+                                setFormData({
+                                    ...formData,
+                                    address: e.target.value
+                                });
+                            }}
+                            className="w-full rounded-xl border max-h-[200px] border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500">
+                            </textarea>                        
                         </div>
 
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">Pin Number</label>
-                            <input type="text" value={formData.pin} onChange={(e)=>{setFormData({...formData,pin:e.target.value})}} maxLength="6" placeholder="Enter your full name" className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
+                            <input type="text"
+                            inputMode="numeric"
+                             required
+                             pattern="[0-9]{6}"
+                              value={formData.pin}
+                               onChange={(e)=>{
+                                const value = e.target.value;
+                                if(!/^[0-9]*$/.test(value)){
+                                    return;
+                                }
+                                setFormData({...formData,pin:e.target.value})}}
+                                maxLength="6"
+                                minLength={6}
+                                 placeholder="Enter your PIN number"
+                                  className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
                         </div>
 
                 </div>
@@ -123,16 +233,34 @@ function NewConnectionForm(){
                        
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">ID Proof</label>
-                            <input type="file" onChange={(e)=>{setFormData({...formData,idProof:e.target.files[0]})}} className=" rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
+                            <input
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                required
+                                onChange={(e) => handleFileChange(e, "idProof")}
+                                className="rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"
+                            />                    
                         </div>
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">Address Proof</label>
-                            <input type="file" onChange={(e)=>{setFormData({...formData,addressProof:e.target.files[0]})}} className=" rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
+                            <input
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                required
+                                onChange={(e) => handleFileChange(e, "addressProof")}
+                                className="rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"
+                            />                        
                         </div>
                         <div className="flex flex-col mt-10 mx-10 gap-2">
                             <label className="text-gray-800 font-medium">Ownership Proof</label>
-                            <input type="file" onChange={(e)=>{setFormData({...formData,ownershipProof:e.target.files[0]})}} className=" rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"></input>
-                        </div>
+                            <input
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                required
+                                onChange={(e) => handleFileChange(e, "ownershipProof")}
+                                className="rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 ring-blue-500"
+                            />                       
+                </div>
                 </div>
                 </Accordion>
                 <Accordion title='DECLARATION'>
