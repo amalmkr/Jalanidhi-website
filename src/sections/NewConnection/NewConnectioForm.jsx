@@ -45,7 +45,8 @@ function NewConnectionForm(){
             }
         }, [mobileNumber, navigate]);
 
-        const handleFileChange = (e, fieldName) => {
+        
+    const handleFileChange = (e, fieldName) => {
     const file = e.target.files[0];
 
     if (!file) {
@@ -61,7 +62,7 @@ function NewConnectionForm(){
     }
 
     setFormData({
-        ...formData,
+        ...formData,      //...copies data from usestate 
         [fieldName]: file
     });
 };
