@@ -1,5 +1,6 @@
 import { MdOutlineReportProblem } from "react-icons/md";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function ComplaintForm() {
 
@@ -13,13 +14,15 @@ function ComplaintForm() {
         image: null
     });
 
+    const navigate = useNavigate()
+
     function handleClick(event) {
         event.preventDefault();
 
         console.log(formData);
 
         alert(`പരാതി വിജയകരമായി സമർപ്പിച്ചു...!!!
-നിങ്ങളുടെ പരാതിക്ക് ഉടൻ തന്നെ ആവശ്യമായ നടപടി സ്വീകരിക്കുന്നതാണ്.`);
+        നിങ്ങളുടെ പരാതിക്ക് ഉടൻ തന്നെ ആവശ്യമായ നടപടി സ്വീകരിക്കുന്നതാണ്.`);
 
         // Reset React state
         setFormData({
@@ -31,6 +34,12 @@ function ComplaintForm() {
             complaintDetails: "",
             image: null
         });
+    
+        navigate('/complaint-success',{
+            state:{
+                formData:formData
+            }
+        })
     }
 
     function handleFileChange(e) {
@@ -306,6 +315,12 @@ function ComplaintForm() {
 
                 </form>
             </div>
+            <div className="mb-15 md:mx-50  rounded-2xl flex-col gap-5 p-5 mt-10 justify-center items-center bg-red-600/20 border-l-6 border-red-600">
+                <h2 className=" text-2xl md:text-3xl text-center font-bold text-red-900">ഇതിനകം പരാതി നൽകിയോ?</h2>
+                <p className="text-xs text-center mt-2 text-red-950 md:text-sm">നിങ്ങൾ നൽകിയ പരാതിയുടെ നില അറിയാൻ താഴെ കാണുന്ന ബട്ടൺ ക്ലിക്ക് ചെയ്യുക </p>
+                <button onClick={()=>navigate('/complaint-status')} className="px-8 py-3 text-xl rounded-3xl hover:bg-red-700 bg-red-500 text-white font-bold block mx-auto mt-5  ">check status</button>
+            </div>
+
         </>
     );
 }

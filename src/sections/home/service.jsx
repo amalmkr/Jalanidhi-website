@@ -37,17 +37,30 @@ function Services() {
       description: "നിങ്ങളുടെ അപേക്ഷയുടെ നിലവിലെ സ്ഥിതി അറിയാം.",
       link:"check-connection"
     },
+
     {
-      icon: <FaClock />,
-      title: "ജല വിതരണം സമയം",
-      description: "നിങ്ങളുടെ പ്രദേശത്തെ ജല വിതരണ സമയം അറിയാം.",
-      link:"water-time"
+      icon: <FaHeadset />,
+      title: "പരാതി രജിസ്റ്റർ ചെയ്യുക",
+      description: "ജലവിതരണവുമായി ബന്ധപ്പെട്ട പരാതികൾ ഓൺലൈനായി രജിസ്റ്റർ ചെയ്യാം.",
+      link:"/complaint"
     },
     {
       icon: <FaHeadset />,
       title: "പരാതി രജിസ്റ്റർ ചെയ്യുക",
       description: "ജലവിതരണവുമായി ബന്ധപ്പെട്ട പരാതികൾ ഓൺലൈനായി രജിസ്റ്റർ ചെയ്യാം.",
       link:"/complaint"
+    },
+    {
+      icon: <FaHeadset />,
+      title: "സഹായി",
+      description: "ജലനിധി സേവനങ്ങൾ എളുപ്പത്തിൽ ഉപയോഗിക്കുന്നതിനുള്ള വീഡിയോ മാർഗ്ഗനിർദ്ദേശങ്ങൾ ഇവിടെ കാണാം.",
+      link:"/complaint"
+    },
+        {
+      icon: <FaClock />,
+      title: "ജല വിതരണം സമയം",
+      description: "നിങ്ങളുടെ പ്രദേശത്തെ ജല വിതരണ സമയം അറിയാം.",
+      link:"water-time"
     },
   ];
 

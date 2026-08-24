@@ -271,11 +271,11 @@ function NewConnectionForm(){
                        
                         <div className="flex mt-10 mx-10 gap-2">
                             <input type="checkbox" required/>
-                            <label className="text-red-500 font-medium">I conform that the information provided is correct</label>
+                            <label className="text-red-500 font-medium">I CONFORM THAT THE INFORMATION PROVIDED IS CORRECT</label>
                         </div>
                         <div className="flex mt-3 mx-10 gap-2">
                             <input type="checkbox" required/>
-                            <label className="text-red-500 font-medium">I agree terms and conditions</label>
+                            <label className="text-red-500 font-medium">I AGREE TERMS AND CONDITION</label>
                         </div>
 
                 </div>

@@ -2,6 +2,7 @@ import helpHero from '../assets/images/help-hero.jpg'
 import { FaPhone, FaCircleInfo } from "react-icons/fa6";
 import { TfiEmail } from "react-icons/tfi";
 import { FaCreditCard, FaWater, FaMagnifyingGlass, FaTriangleExclamation } from "react-icons/fa6";
+import { FaSearch, FaSearchengin, FaSearchMinus } from 'react-icons/fa';
 
 
 function Help() {
@@ -131,6 +132,32 @@ function Help() {
 
                         <h2 className='text-center text-2xl md:text-3xl font-extrabold text-blue-700'>
                             എങ്ങനെ പരാതിപ്പെടാം ?
+                        </h2>
+
+                    </div>
+
+                    {/* Video Placeholder */}
+                    <div className='mt-8 aspect-video bg-gray-100 rounded-xl flex flex-col justify-center items-center border-2 border-dashed border-gray-300'>
+
+                        <div className='text-5xl text-gray-300 mb-3'>
+                            ▶
+                        </div>
+
+                        <p className='text-gray-400 text-lg font-medium'>
+                            വീഡിയോ ഉടൻ ലഭ്യമാകും
+                        </p>
+
+                    </div>
+
+                </div>
+                <div className='bg-white max-w-[1000px] mx-auto rounded-2xl mt-10 p-6 md:p-10 shadow-md hover:shadow-xl transition-all duration-300'>
+
+                    <div className='flex flex-col md:flex-row justify-center items-center gap-4'>
+
+                        <FaSearchMinus className='text-4xl text-blue-500' />
+
+                        <h2 className='text-center text-1xl md:text-2xl font-bold text-blue-700'>
+                            നിങ്ങൾ നൽകിയ പരാതിയുടെ നില  എങ്ങനെ പരിശോധിക്കാം ?
                         </h2>
 
                     </div>
