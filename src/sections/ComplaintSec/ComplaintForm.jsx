@@ -11,13 +11,28 @@ function ComplaintForm() {
         area: "",
         location: "",
         complaintDetails: "",
-        image: null
+        image: null,
     });
 
     const navigate = useNavigate()
 
     function handleClick(event) {
         event.preventDefault();
+
+        const complaintID="JN-CMP-"+Date.now()
+
+        const complaint={
+            ...formData,
+            complaintID:complaintID,
+            status:"submitted"
+
+        };
+
+        const complaints = JSON.parse(localStorage.getItem("complaints")) || [];
+
+        complaints.push(complaint);
+
+        localStorage.setItem("complaints", JSON.stringify(complaints));
 
         console.log(formData);
 
@@ -37,9 +52,11 @@ function ComplaintForm() {
     
         navigate('/complaint-success',{
             state:{
-                formData:formData
+                complaint:complaint
             }
         })
+
+        
     }
 
     function handleFileChange(e) {

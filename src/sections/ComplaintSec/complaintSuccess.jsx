@@ -6,7 +6,7 @@ function ComplaintSuccess() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const formData = location.state?.formData;
+    const {complaint}=location.state;
 
     return (
         <section className="min-h-[70vh] flex items-center justify-center px-4 sm:px-6 py-10">
@@ -27,7 +27,7 @@ function ComplaintSuccess() {
 
                 {/* Message */}
                 <p className="text-gray-500 text-sm sm:text-base mt-3 leading-relaxed">
-                    Your complaint has been submitted successfully. We will look into it.
+                    Your complaint has been submitted successfully. We will look into it.   
                 </p>
 
                 <hr className="my-6 sm:my-8 border-gray-200" />
@@ -42,7 +42,7 @@ function ComplaintSuccess() {
                         </span>
 
                         <span className="font-bold text-sm sm:text-base sm:text-right">
-                            CMP1001
+                            {complaint?.complaintID || "N/A"}
                         </span>
                     </div>
 
@@ -53,7 +53,7 @@ function ComplaintSuccess() {
                         </span>
 
                         <span className="font-bold text-sm sm:text-base sm:text-right">
-                            {formData?.mobileNumber || "N/A"}
+                            {complaint?.mobileNumber || "N/A"}
                         </span>
                     </div>
 
@@ -64,7 +64,7 @@ function ComplaintSuccess() {
                         </span>
 
                         <span className="font-bold text-sm sm:text-base sm:text-right">
-                            {formData?.consumerNumber || "Not provided"}
+                            {complaint?.consumerNumber || "Not provided"}
                         </span>
                     </div>
 
@@ -75,7 +75,7 @@ function ComplaintSuccess() {
                         </span>
 
                         <span className="font-bold text-sm sm:text-base sm:text-right">
-                            {formData?.complaintType || "N/A"}
+                            {complaint?.complaintType || "N/A"}
                         </span>
                     </div>
 
@@ -86,7 +86,7 @@ function ComplaintSuccess() {
                         </span>
 
                         <span className="font-bold text-sm sm:text-base sm:text-right">
-                            {formData?.area || "N/A"}
+                            {complaint?.area || "N/A"}
                         </span>
                     </div>
 
@@ -97,7 +97,7 @@ function ComplaintSuccess() {
                         </span>
 
                         <span className="font-bold text-sm sm:text-base sm:text-right break-all">
-                            {formData?.location || "N/A"}
+                            {complaint?.location || "N/A"}
                         </span>
                     </div>
 

@@ -50,7 +50,7 @@ function Services() {
       icon: <TbSettingsCheck />,
       title: "നൽകിയ പരാതിയുടെ നില",
       description: "നിങ്ങൾ നൽകിയ പരാതിയുടെ നില അറിയാൻ താഴെ കാണുന്ന ബട്ടൺ ക്ലിക്ക് ചെയ്യുക.",
-      link:"/complaint"
+      link:"/complaint-status"
     },
     {
       icon: <FaHandsHelping />,

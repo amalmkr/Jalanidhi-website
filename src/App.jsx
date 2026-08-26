@@ -14,7 +14,6 @@ import Help from './pages/Help';
 import WaterTime from './pages/WaterTime';
 import NewConnection from './pages/NewConnection';
 import CheckConnection from './pages/CheckConnection';
-import ConnectionStatus from './pages/ConnectionStatus';
 import NewConnectionSuccess from './sections/NewConnection/NewConnectionSuccess';
 import NewConnectionForm from './sections/NewConnection/NewConnectioForm';
 import ScrollToTop from './components/ScrollToTop';
@@ -44,7 +43,6 @@ function App() {
       <Route path='/announcement' element={<Announcemnt/>}/>
       <Route path='/new-connection' element={<NewConnection/>}/>
       <Route path='/check-connection' element={<CheckConnection/>}/>
-      <Route path='connection-status' element={<ConnectionStatus/>}/>
       <Route path='/water-time' element={<WaterTime/>}/>
       <Route path='/connection-form' element={<NewConnectionForm/>}/>
       <Route path='/connection-success' element={<NewConnectionSuccess/>}/>

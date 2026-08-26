@@ -7,7 +7,7 @@ function NewConnectionSuccess() {
     const navigate = useNavigate();
     const location = useLocation()
 
-    const formData = location.state?.formData;
+    const application = location.state?.application;
     const mobileNumber = location.state?.mobileNumber;
 
 
@@ -43,7 +43,7 @@ function NewConnectionSuccess() {
                         </span>
 
                         <span className="font-bold">
-                            JN20260001
+                            {application?.applicationNo || "NULL"}
                         </span>
                     </div>
                     <div className="flex justify-between">
@@ -52,7 +52,7 @@ function NewConnectionSuccess() {
                         </span>
 
                         <span className="font-bold">
-                            {formData?.name}
+                            {application.name}
                         </span>
                     </div>
                     <div className="flex justify-between">
@@ -61,7 +61,7 @@ function NewConnectionSuccess() {
                         </span>
 
                         <span className="font-bold">
-                            {formData?.area}
+                            {application?.area || "NUL"}
                         </span>
                     </div>
 
@@ -81,19 +81,19 @@ function NewConnectionSuccess() {
                         </span>
 
                         <span className="font-bold text-green-600">
-                            Submitted
+                            {application?.status}
                         </span>
                     </div>
 
                 </div>
 
                 {/* Buttons */}
-                <div className="flex gap-5">
+                <div className="flex flex-col sm:flex-row gap-5">
 
                     <button
                         type="button"
                         className="w-full mt-8 bg-blue-600 hover:bg-blue-700 transition duration-300 text-white font-bold py-3 rounded-lg"
-                        onClick={() => navigate("/connection-status")}
+                        onClick={() => navigate("/check-connection")}
                     >
                         Check Status
                     </button>

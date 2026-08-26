@@ -25,12 +25,20 @@ function NewConnectionForm(){
     const handleSubmit = (e)=>{
         e.preventDefault();
 
+        const applicationNo="JN-CNTN-"+Date.now();
+
+        const application ={
+            ...formData,
+            applicationNo:applicationNo,
+            status:"submitted"
+        }
+
         console.log("form data : ",formData);
         console.log("Mobile number :",mobileNumber);
         navigate('/connection-success',{
             state:{
                 mobileNumber:mobileNumber,
-                formData:formData
+                application:application
             }
         })
     }
