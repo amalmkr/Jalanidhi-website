@@ -6,10 +6,12 @@ import {
   FaClock,
   FaHeadset,
   FaChevronRight,
+  FaHandsHelping
 } from "react-icons/fa";
 import { GrAnnounce } from "react-icons/gr";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { TbSettingsCheck } from "react-icons/tb";
 
 function Services() {
   const services = [
@@ -35,7 +37,7 @@ function Services() {
       icon: <FaSearchLocation />,
       title: "കണക്ഷൻ നില പരിശോധിക്കുക",
       description: "നിങ്ങളുടെ അപേക്ഷയുടെ നിലവിലെ സ്ഥിതി അറിയാം.",
-      link:"check-connection"
+      link:"/check-connection"
     },
 
     {
@@ -45,22 +47,22 @@ function Services() {
       link:"/complaint"
     },
     {
-      icon: <FaHeadset />,
-      title: "പരാതി രജിസ്റ്റർ ചെയ്യുക",
-      description: "ജലവിതരണവുമായി ബന്ധപ്പെട്ട പരാതികൾ ഓൺലൈനായി രജിസ്റ്റർ ചെയ്യാം.",
+      icon: <TbSettingsCheck />,
+      title: "നൽകിയ പരാതിയുടെ നില",
+      description: "നിങ്ങൾ നൽകിയ പരാതിയുടെ നില അറിയാൻ താഴെ കാണുന്ന ബട്ടൺ ക്ലിക്ക് ചെയ്യുക.",
       link:"/complaint"
     },
     {
-      icon: <FaHeadset />,
+      icon: <FaHandsHelping />,
       title: "സഹായി",
-      description: "ജലനിധി സേവനങ്ങൾ എളുപ്പത്തിൽ ഉപയോഗിക്കുന്നതിനുള്ള വീഡിയോ മാർഗ്ഗനിർദ്ദേശങ്ങൾ ഇവിടെ കാണാം.",
-      link:"/complaint"
+      description: "ജലനിധി സേവനങ്ങൾ വീഡിയോ മാർഗ്ഗനിർദ്ദേശങ്ങൾ ഇവിടെ കാണാം.",
+      link:"/help"
     },
         {
       icon: <FaClock />,
       title: "ജല വിതരണം സമയം",
       description: "നിങ്ങളുടെ പ്രദേശത്തെ ജല വിതരണ സമയം അറിയാം.",
-      link:"water-time"
+      link:"/water-time"
     },
   ];
 
