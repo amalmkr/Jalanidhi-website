@@ -10,6 +10,23 @@ function NewConnectionSuccess() {
     const application = location.state?.application;
     const mobileNumber = location.state?.mobileNumber;
 
+    if (!application) {
+    return (
+        <div className="min-h-[60vh] flex items-center justify-center">
+            <div className="text-center">
+                <h1 className="text-center font-bold text-5xl text-red-500">404 error</h1>
+                <h2 className="text-2xl mt-4 font-bold text-red-600">
+                    Application details not found
+                </h2>
+
+                <p className="text-gray-600 mt-2">
+                    Please submit the new connection form again.
+                </p>
+            </div>
+        </div>
+    );
+}
+
 
     return (
         <section className="min-h-[70vh] flex items-center justify-center px-5 py-10">
@@ -61,7 +78,7 @@ function NewConnectionSuccess() {
                         </span>
 
                         <span className="font-bold">
-                            {application?.area || "NUL"}
+                            {application?.area || "Not Provided"}
                         </span>
                     </div>
 
@@ -81,7 +98,7 @@ function NewConnectionSuccess() {
                         </span>
 
                         <span className="font-bold text-green-600">
-                            {application?.status}
+                            {application?.status || "Under Process"}
                         </span>
                     </div>
 

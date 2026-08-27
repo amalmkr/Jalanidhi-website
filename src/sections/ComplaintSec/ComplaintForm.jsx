@@ -36,8 +36,6 @@ function ComplaintForm() {
 
         console.log(formData);
 
-        alert(`പരാതി വിജയകരമായി സമർപ്പിച്ചു...!!!
-        നിങ്ങളുടെ പരാതിക്ക് ഉടൻ തന്നെ ആവശ്യമായ നടപടി സ്വീകരിക്കുന്നതാണ്.`);
 
         // Reset React state
         setFormData({

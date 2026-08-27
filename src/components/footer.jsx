@@ -2,6 +2,8 @@ import { useState } from "react";
 import logo from "../assets/icons/footer-logo.png";
 import { IoAddSharp } from "react-icons/io5";
 import { FiMinus } from "react-icons/fi";
+import { Link } from "react-router-dom";
+import { HashLink } from "react-router-hash-link";
 
 import {
     FaFacebookF,
@@ -139,34 +141,63 @@ function Footer() {
 
                     <FooterAccordion title="Quick Links">
 
-                        <ul className="space-y-4 text-gray-300">
-
-                            <li className="hover:text-sky-400 cursor-pointer transition">
+                    <ul className="space-y-4">
+                        <li>
+                            <Link
+                                to="/"
+                                className="hover:text-sky-400 cursor-pointer transition"
+                            >
                                 Home
-                            </li>
+                            </Link>
+                        </li>
 
-                            <li className="hover:text-sky-400 cursor-pointer transition">
+                        <li>
+                            <Link
+                                to="/about"
+                                className="hover:text-sky-400 cursor-pointer transition"
+                            >
                                 About
-                            </li>
+                            </Link>
+                        </li>
 
-                            <li className="hover:text-sky-400 cursor-pointer transition">
+                        <li>
+                            <HashLink
+                                smooth
+                                to="/#services"
+                                className="hover:text-sky-400 cursor-pointer transition"
+                            >
                                 Services
-                            </li>
+                            </HashLink>
+                        </li>
 
-                            <li className="hover:text-sky-400 cursor-pointer transition">
+                        <li>
+                            <Link
+                                to="/quick-pay"
+                                className="hover:text-sky-400 cursor-pointer transition"
+                            >
                                 Bill Payment
-                            </li>
+                            </Link>
+                        </li>
 
-                            <li className="hover:text-sky-400 cursor-pointer transition">
+                        <li>
+                            <Link
+                                to="/new-connection"
+                                className="hover:text-sky-400 cursor-pointer transition"
+                            >
                                 New Connection
-                            </li>
+                            </Link>
+                        </li>
 
-                            <li className="hover:text-sky-400 cursor-pointer transition">
+                        <li>
+                            <HashLink
+                                smooth
+                                to="/#contact"
+                                className="hover:text-sky-400 cursor-pointer transition"
+                            >
                                 Contact
-                            </li>
-
-                        </ul>
-
+                            </HashLink>
+                        </li>
+                    </ul>
                     </FooterAccordion>
 
 
